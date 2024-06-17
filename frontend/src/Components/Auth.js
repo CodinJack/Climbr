@@ -6,7 +6,7 @@ import { selectAuthenticated } from '../../store/slice';
 // Find the component property defined on props (Note: lowercase component) and assign it to a new location in state we call Component (Note: capital Component).
 // Then, take all remaining properties defined on the props object and collect them inside an argument called rest.
 
-const AuthRoute = ({ component: Component, ...rest }) => {
+const Auth = ({ component: Component, ...rest }) => {
   const isAuthenticated = useSelector(selectAuthenticated);
 
   return (
@@ -19,4 +19,4 @@ const AuthRoute = ({ component: Component, ...rest }) => {
   );
 };
 
-export default AuthRoute;
+export default Auth;

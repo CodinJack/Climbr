@@ -8,8 +8,8 @@ import {
   selectError,
   selectAuthenticated,
 } from '../../store/slice';
-import Button from '../elements/Button';
-import ErrorMessage from '../elements/ErrorMessage';
+import Button from './Button';
+import ErrorMessage from './ErrorMessage';
 
 const LoginContainer = styled.div`
   height: calc(100% - 64px);
