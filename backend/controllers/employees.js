@@ -36,18 +36,3 @@ exports.createEmployee = async (req, res) => {
         res.status(400).json({ message: err.message });
     }
 };
-
-//update an employee by ID
-exports.updateEmployee = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const updatedEmployee = await Employee.findByIdAndUpdate(id, req.body, { new: true });
-        if (!updatedEmployee) {
-            return res.status(404).json({ message: 'Employee not found' });
-        }
-        res.json(updatedEmployee);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
-    }
-};
