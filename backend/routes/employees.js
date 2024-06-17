@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const emp = require('../controllers/employees'); 
+const employeeController  = require('../controllers/employees'); 
 
 router.get('/', employeeController.getEmployees)
       .get('/:id', employeeController.getEmployeeById)
-      .post('/', emp.createEmployee)
-      .put('/:id', emp.updateEmployee)
+      .post('/', employeeController.createEmployee)
+      .put('/:id', employeeController.updateEmployee)
 
 module.exports = router;

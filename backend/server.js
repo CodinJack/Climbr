@@ -10,7 +10,11 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
+//routes
 const employeeRoutes = require('./routes/employees');
 app.use('/employees', employeeRoutes);
+
+const taskRoutes = require('./routes/tasks');
+app.use('/tasks', taskRoutes);
 
 app.listen(port, () => console.log(`Server listening on port ${port}`));
