@@ -13,7 +13,6 @@ app.use(express.json());
 
 const url = "mongodb+srv://jaikhanna615:xQ9EPYcArWbjx7aK@chatcluster.fxx8b1c.mongodb.net/?retryWrites=true&w=majority&appName=ChatCluster"
 
-
 const connect = mongoose
   .connect(uri, {
     useNewUrlParser: true,
