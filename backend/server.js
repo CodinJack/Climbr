@@ -2,12 +2,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-
-require('dotenv').config();
-
 const app = express();
-const port = process.env.PORT || 5000;
-const uri = process.env.URI;
+
+const port = 5000;
+const uri = "mongodb+srv://jaikhanna615:iE0rAm2jjjLA87mY@climbrcluster.op1r68y.mongodb.net/?retryWrites=true&w=majority&appName=ClimbrCluster";
 
 mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('MongoDB connected successfully!'))

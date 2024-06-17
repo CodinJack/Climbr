@@ -40,7 +40,7 @@ TaskSchema.pre('save', async function (next) {
                 throw new Error('Assigned employee not found');
             }
             assignedEmployee.totalPoints += task.points;
-            await assignedEmployee.save(); // Update employee points
+            await assignedEmployee.save(); 
         } catch (err) {
             console.error(err);
         }
