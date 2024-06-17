@@ -10,5 +10,4 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
-//postgres
-const uri = ''
+app.listen(port, () => console.log(`Server listening on port ${port}`));
