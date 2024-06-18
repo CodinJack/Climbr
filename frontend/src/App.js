@@ -1,25 +1,25 @@
-import logo from './logo.svg';
+import React from 'react';
 import './App.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import EmployeeDetail from "./pages/EmployeeDetail"
+import EmployeeList from './pages/EmployeeList';
+import TaskDetail from './pages/TaskDetail';
+import TasksList from './pages/TasksList';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <div className="App container-fluid vh-100 d-flex flex-column justify-content-center align-items-center">
+        <Routes>
+          <Route path="/tasks" element={<TasksList />} />
+          <Route path="/tasks/:id" element={<TaskDetail />} />
+          <Route path="/employees" element={<EmployeeList />} />
+          <Route path="/employees/:id" element={<EmployeeDetail />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
   );
 }
+
 
 export default App;
