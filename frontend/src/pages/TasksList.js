@@ -1,10 +1,10 @@
-import React from 'react'
-import Navbar from '../components/Navbar'
+import React from 'react';
+import Navbar from '../components/Nav';
 
 export default function TasksList() {
-    return (
-        <div className='container-fluid'>
-            <Navbar />
-        </div>
-    )
+  return (
+    <div className="container-fluid">
+      <Navbar />
+    </div>
+  );
 }
