@@ -30,23 +30,5 @@ const TaskSchema = new mongoose.Schema({
         default: 0,
     },
 });
-
-TaskSchema.pre('save', async function (next) {
-    const task = this;
-    if (task.isModified('completed') && task.completed === true) {
-        try {
-            const assignedEmployee = await Employee.findById(task.assignedTo);
-            if (!assignedEmployee) {
-                throw new Error('Assigned employee not found');
-            }
-            assignedEmployee.totalPoints += task.points;
-            await assignedEmployee.save(); 
-        } catch (err) {
-            console.error(err);
-        }
-    }
-    next();
-});
-
-
+  
 module.exports = mongoose.model('Task', TaskSchema);
