@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Nav';
 import Modal from '../components/TaskModal';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 export default function EmployeeList() {
   const [employees, setEmployees] = useState([]);
@@ -14,6 +16,11 @@ export default function EmployeeList() {
   });
 
   useEffect(() => {
+    AOS.init({
+      duration: 1000,
+      once: true
+    });
+
     const fetchData = async () => {
       try {
         const response = await fetch('http://localhost:5000/employees');
@@ -71,7 +78,7 @@ export default function EmployeeList() {
         </div>
         <div className="flex flex-wrap justify-center">
           {employees.map((employee) => (
-            <Link to={`/employees/${employee._id}`} key={employee._id}>
+            <Link data-aos="fade-up" to={`/employees/${employee._id}`} key={employee._id}>
               <div className="bg-gray-800 p-10 rounded-lg shadow-md mx-4 my-4 max-w-sm text-center">
                 <h3 className="text-2xl font-semibold text-purple-400">{employee.name}</h3>
                 <p className="text-gray-300">Username: {employee.employeeID}</p>
