@@ -4,16 +4,6 @@
 @tailwind utilities;
 
 body {
-  background-color: #212529;
-  color: #fff;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  color: #fff;
-}
-
-.card {
-  background-color: #343a40;
-  border-color: #454d55;
+  background-color: #23282d;
   color: #fff;
 }

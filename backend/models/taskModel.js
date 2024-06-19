@@ -13,10 +13,6 @@ const TaskSchema = new mongoose.Schema({
     dueDate: {
         type: Date,
     },
-    difficulty: {
-        type: String,
-        enum: ["Hard", "Medium", "Easy"],
-    },
     assignedTo: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Employee',

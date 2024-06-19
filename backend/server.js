@@ -10,12 +10,12 @@ const uri = "mongodb+srv://jaikhanna615:iE0rAm2jjjLA87mY@climbrcluster.op1r68y.m
 mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('MongoDB connected successfully!'))
     .catch(err => console.error('Error connecting to MongoDB:', err));
-
+ 
 //middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-//routes
+//routes 
 const employeeRoutes = require('./routes/employees');
 app.use('/employees', employeeRoutes);
 
