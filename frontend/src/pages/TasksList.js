@@ -1,8 +1,8 @@
-// src/pages/TasksList.js
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Nav';
 import Task from '../components/Task';
 import Modal from '../components/TaskModal';
+import Search from '../components/Search';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
@@ -18,6 +18,8 @@ export default function TasksList() {
     points: '',
     assignedTo: '',
   });
+  const [assignToOption, setAssignToOption] = useState('single');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const getEmployeeID = (taskId) => {
     const employee = employees.find((emp) => emp._id === taskId);
@@ -73,25 +75,29 @@ export default function TasksList() {
 
   const handleCreateTask = async () => {
     try {
-      const employee = employees.find(emp => emp.employeeID === empID);
-      if (employee) {
-        newTask.assignedTo = employee._id;
+      let assignedToList = [];
+      if (assignToOption === 'all') {
+        assignedToList = employees.map(emp => emp._id);
       } else {
-        newTask.assignedTo = '';
+        const employee = employees.find(emp => emp.employeeID === empID);
+        assignedToList = employee ? [employee._id] : [];
       }
 
-      const response = await fetch('http://localhost:5000/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newTask),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Error creating task');
-      }
-      
-      const data = await response.json();
-      console.log('Task created successfully:', data);
+      const tasksToCreate = assignedToList.map(empID => ({
+        ...newTask,
+        assignedTo: empID,
+      }));
+
+      await Promise.all(tasksToCreate.map(async task => {
+        const response = await fetch('http://localhost:5000/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(task),
+        });
+        if (!response.ok) {
+          throw new Error('Error creating task');
+        }
+      }));
 
       const tasksResponse = await fetch('http://localhost:5000/tasks');
       const tasksData = await tasksResponse.json();
@@ -105,21 +111,32 @@ export default function TasksList() {
     }
   };
 
+  const filteredTasks = tasks.filter(task =>
+    task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    task.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="container mx-auto py-12 px-6 min-h-screen text-white">
       <Navbar />
       <div className="container-fluid mx-auto py-12 px-6">
-        <div className="sticky top-16 py-6 z-0 flex justify-between">
-          <h1 className="text-white text-3xl font-bold">Tasks</h1>
-          <button
-            onClick={() => setModalOpen(true)}
-            className='bg-purple-500 text-white font-medium text-xl px-3 py-2 rounded-lg shadow-lg hover:bg-purple-600 transition duration-300 ease-in-out transform hover:scale-105'
-          >
-            Create a task
-          </button>
+      <div className="grid grid-cols-3 gap-4 sticky top-16 py-6 z-0">
+          <h1 className="col-span-1 text-white text-3xl font-bold">Tasks</h1>
+          <div className="col-span-1">
+            <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+          </div>
+          <div className="col-span-1 flex justify-end">
+            <button
+              onClick={() => setModalOpen(true)}
+              className='bg-purple-500 text-white font-medium text-xl px-3 py-2 rounded-lg shadow-lg hover:bg-purple-600 transition duration-300 ease-in-out transform hover:scale-105'
+            >
+              Create a task
+            </button>
+          </div>
         </div>
+        
         <div className="space-y-4 pt-2">
-          {tasks.map((task) => (
+          {filteredTasks.map((task) => (
             <Task 
               data-aos="fade-up" 
               key={task.id}
@@ -174,14 +191,28 @@ export default function TasksList() {
           </div>
           <div className="mb-2">
             <label className="block text-gray-700 text-sm font-bold mb-2">Assign To</label>
-            <input
-              type="text"
-              name="assignedTo"
-              value={empID}
-              onChange={handleInputChange}
+            <select
+              name="assignToOption"
+              value={assignToOption}
+              onChange={(e) => setAssignToOption(e.target.value)}
               className="w-full text-black px-3 py-2 border rounded-lg"
-            />
+            >
+              <option value="single">Assign to one</option>
+              <option value="all">Assign to all</option>
+            </select>
           </div>
+          {assignToOption === 'single' && (
+            <div className="mb-2">
+              <label className="block text-gray-700 text-sm font-bold mb-2">Employee ID</label>
+              <input
+                type="text"
+                name="assignedTo"
+                value={empID}
+                onChange={handleInputChange}
+                className="w-full text-black px-3 py-2 border rounded-lg"
+              />
+            </div>
+          )}
           <div className="flex justify-center">
             <button
               type="button"
