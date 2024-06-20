@@ -77,20 +77,11 @@ exports.patchTask = async (req, res) => {
             return res.status(404).json({ message: 'Task not found' });
         }
         if (updates.completed) {
-            console.log("Fix")
             const assignedEmployee = await Employee.findById(updatedTask.assignedTo);
             if (!assignedEmployee) {
                 throw new Error('Assigned employee not found');
             }
             assignedEmployee.totalPoints += updatedTask.points;
-            await assignedEmployee.save();
-            if (assignedEmployee.tasks && assignedEmployee.tasks.length > 0) {
-                const taskIndex = assignedEmployee.tasks.indexOf(updatedTask._id.toString());
-                if (taskIndex !== -1) {
-                    assignedEmployee.tasks.splice(taskIndex, 1);
-                }
-                updatedTask.assignedTo=null;
-            }
             await assignedEmployee.save();
         }
         res.status(200).json(updatedTask);

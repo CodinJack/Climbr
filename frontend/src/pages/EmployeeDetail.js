@@ -1,31 +1,60 @@
-// src/pages/EmployeeDetail.js
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Nav';
-import Task from '../components/Task'; // Assuming Task component is defined
+import Task from '../components/Task'; 
 
 export default function EmployeeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [employee, setEmployee] = useState();
+  const [taskIDs, setTaskIDs] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchEmployee = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/employees/${id}?_embed=tasks`);
+        const response = await fetch(`http://localhost:5000/employees/${id}`);
         const data = await response.json();
         setEmployee(data);
         if (data.tasks) {
-          setTasks(data.tasks);
+          setTaskIDs(data.tasks);
         }
       } catch (error) {
         console.error('Error fetching employee:', error);
+        setError('Failed to fetch employee data');
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchEmployee();
   }, [id]);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/tasks`);
+        const data = await response.json();
+        const assignedTasks = data.filter(task => taskIDs.includes(task._id));
+        
+        assignedTasks.sort((a, b) => (a.completed === b.completed ? 0 : (a.completed ? 1 : -1)));
+        setTasks(assignedTasks);
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+        setError('Failed to fetch tasks');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (taskIDs.length > 0) {
+      fetchTasks();
+    } else {
+      setLoading(false);
+    }
+  }, [taskIDs]);
 
   const handleRemoveEmployee = async () => {
     try {
@@ -34,14 +63,23 @@ export default function EmployeeDetail() {
       });
       if (response.ok) {
         console.log('Employee removed successfully');
-        navigate('/employees'); // Navigate back to employee list using useNavigate
+        navigate('/employees'); 
       } else {
         throw new Error('Failed to remove employee');
       }
     } catch (error) {
       console.error('Error removing employee:', error);
+      setError('Failed to remove employee');
     }
   };
+
+  if (loading) {
+    return <div className="text-white">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="text-white">{error}</div>;
+  }
 
   if (!employee) {
     return <div className="text-white">Employee not found</div>;
@@ -58,8 +96,8 @@ export default function EmployeeDetail() {
       </button>
       <div className="bg-gray-800 p-8 rounded-lg shadow-md max-w-4xl mx-auto mt-0">
         <div className='flex justify-between'>
-        <h2 className="text-4xl font-bold text-purple-400 mb-6">{employee.name}</h2>
-        <button
+          <h2 className="text-4xl font-bold text-purple-400 mb-6">{employee.name}</h2>
+          <button
             onClick={handleRemoveEmployee}
             className="px-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
           >
@@ -68,16 +106,12 @@ export default function EmployeeDetail() {
         </div>
         
         <p className="text-gray-300 mb-6">Employee ID: {employee.employeeID}</p>
-        <div className="flex items-center justify-between mb-8">
 
-          
-        </div>
-
-        <div className="text-2xl font-semibold text-purple-400 mb-4">Tasks Assigned:</div>
+        <div className="text-2xl font-semibold text-purple-400 mb-4">TaskIDs Assigned:</div>
         <div className="space-y-4">
-          {tasks.length === 0 && <p className="text-white">No tasks assigned to this employee.</p>}
-          {tasks.length !== 0 && tasks.map(task => (
-            <Task key={task._id} assignedTo={employee.name} name={employee.name} task={task} />
+          {tasks.length === 0 && <p className="text-white">No taskIDs assigned to this employee.</p>}
+          {tasks.map(task => (
+            <Task key={task._id} assignedTo={employee._id} name={employee.name} task={task} />
           ))}
         </div>
       </div>

@@ -96,8 +96,8 @@ export default function TasksList() {
       const tasksResponse = await fetch('http://localhost:5000/tasks');
       const tasksData = await tasksResponse.json();
       setTasks(tasksData);
-
       setNewTask({ title: '', description: '', dueDate: '', points: '', assignedTo: '' });
+      window.location.reload();
     } catch (error) {
       console.error('Error creating task:', error);
     } finally {

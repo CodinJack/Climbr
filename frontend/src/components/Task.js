@@ -20,7 +20,7 @@ export default function Task({ task, name, assignedTo, ...props }) {
       {...props}
     >
       <div className="flex justify-between items-center">
-      <h3 className={`text-2xl font-semibold ${task.completed ? 'text-green-500' : 'text-purple-400'}`}>{task.title} <span className='text-lg'>({task.points} points)</span></h3>
+      <h3 className={`text-2xl font-semibold ${task.completed ? 'text-green-500' : 'text-purple-400'}`}>{task.title} <span className='text-lg'>({task.points} points) {(task.completed)?'  -  Completed':''}</span> </h3>
         <p className="text-gray-500">Due date: <span className='text-white'>{formattedDate}</span></p>
       </div>
       <p className="text-gray-300">
