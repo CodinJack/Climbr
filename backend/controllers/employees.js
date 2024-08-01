@@ -40,11 +40,20 @@ exports.deleteEmployee = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const deletedEmployee = await Employee.findByIdAndDelete(id);
-        if (!deletedEmployee) {
+        const employee = await Employee.findById(id);
+        if (!employee) {
             return res.status(404).json({ message: 'Employee not found' });
         }
-        res.json({ message: 'Task deleted successfully' });
+
+        //find and delete all tasks assigned to this employee
+        for (const taskId of employee.tasks) {
+            await Task.findByIdAndDelete(taskId);
+        }
+
+        //delete the employee
+        await Employee.findByIdAndDelete(id);
+
+        res.json({ message: 'Employee and their tasks deleted successfully' });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
