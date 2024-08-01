@@ -45,28 +45,34 @@ exports.createTask = async (req, res) => {
 };
 
 //delete a task by ID
-exports.deleteTask = async (req, res) => {
+// Employee model
+const Employee = require('../models/Employee');
+// Task model
+const Task = require('../models/Task');
+
+exports.deleteEmployee = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const deletedTask = await Task.findByIdAndDelete(id);
-        if (!deletedTask) {
-            return res.status(404).json({ message: 'Task not found' });
+        const employee = await Employee.findById(id);
+        if (!employee) {
+            return res.status(404).json({ message: 'Employee not found' });
         }
 
-        if (deletedTask.assignedTo) {
-            const assignedEmployee = await Employee.findById(deletedTask.assignedTo);
-
-            if (assignedEmployee) {
-                assignedEmployee.tasks.pull(deletedTask._id);
-                await assignedEmployee.save();
-            }
+        //find and delete all tasks assigned to this employee
+        for (const taskId of employee.tasks) {
+            await Task.findByIdAndDelete(taskId);
         }
-        res.json({ message: 'Task deleted successfully' });
+
+        //delete the employee
+        await Employee.findByIdAndDelete(id);
+
+        res.json({ message: 'Employee and their tasks deleted successfully' });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 };
+
 exports.patchTask = async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
