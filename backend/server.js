@@ -8,21 +8,21 @@ const app = express();
 const port = process.env.PORT;
 const uri = process.env.MONGO_URI;
 
-// DB connect
+//db connect
 mongoose.connect(uri)
   .then(() => console.log('MongoDB connected successfully!'))
   .catch(err => console.error('Error connecting to MongoDB:', err));
 
-// Middleware
+//middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-// Routes
+//routes
 const employeeRoutes = require('./routes/employees');
 app.use('/employees', employeeRoutes);
 
 const taskRoutes = require('./routes/tasks');
 app.use('/tasks', taskRoutes);
 
-// Start server
+//start server
 app.listen(port, () => console.log(`Server listening on port ${port}`));
