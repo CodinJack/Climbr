@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import EmployeeDetail from "./pages/EmployeeDetail";
 import EmployeeList from './pages/EmployeeList';
 import TaskDetail from './pages/TaskDetail';
 import TasksList from './pages/TasksList';
+import Leaderboard from './pages/Leaderboard';
+import Login from './pages/Login';
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -19,7 +20,7 @@ function App() {
       } catch (error) {
         console.error('Error fetching tasks:', error);
       }
-    };
+    }; 
     fetchData();
   }, []);
 
@@ -45,6 +46,8 @@ function App() {
           <Route path="/tasks/:id" element={<TaskDetail tasks={tasks} employees={employees} />} />
           <Route path="/employees" element={<EmployeeList />} />
           <Route path="/employees/:id" element={<EmployeeDetail />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
       </div>
     </BrowserRouter>

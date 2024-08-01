@@ -41,8 +41,13 @@ export default function TasksList() {
       try {
         const response = await fetch('http://localhost:5000/tasks');
         const data = await response.json();
-        data.sort((a, b) => (a.completed === b.completed ? 0 : (a.completed ? 1 : -1)));
-        setTasks(data);
+
+        const completedTasks = data.filter(task => task.completed);
+        const nonCompletedTasks = data.filter(task => !task.completed);
+
+        nonCompletedTasks.sort((a, b) => b.points - a.points); // Sort by points in descending order
+
+        setTasks([...nonCompletedTasks, ...completedTasks]);
       } catch (error) {
         console.error('Error fetching tasks:', error);
       }
@@ -101,13 +106,19 @@ export default function TasksList() {
 
       const tasksResponse = await fetch('http://localhost:5000/tasks');
       const tasksData = await tasksResponse.json();
-      setTasks(tasksData);
+
+      const completedTasks = tasksData.filter(task => task.completed);
+      const nonCompletedTasks = tasksData.filter(task => !task.completed);
+
+      nonCompletedTasks.sort((a, b) => b.points - a.points);
+
+      setTasks([...nonCompletedTasks, ...completedTasks]);
       setNewTask({ title: '', description: '', dueDate: '', points: '', assignedTo: '' });
       window.location.reload();
     } catch (error) {
       console.error('Error creating task:', error);
     } finally {
-      setModalOpen(false); 
+      setModalOpen(false);
     }
   };
 
@@ -120,7 +131,7 @@ export default function TasksList() {
     <div className="container mx-auto py-12 px-6 min-h-screen text-white">
       <Navbar />
       <div className="container-fluid mx-auto py-12 px-6">
-      <div className="grid grid-cols-3 gap-4 sticky top-16 py-6 z-0">
+        <div className="grid grid-cols-3 gap-4 top-16 py-6 z-0">
           <h1 className="col-span-1 text-white text-3xl font-bold">Tasks</h1>
           <div className="col-span-1">
             <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
@@ -132,7 +143,7 @@ export default function TasksList() {
             >
               Create a task
             </button>
-          </div>
+          </div> 
         </div>
         
         <div className="space-y-4 pt-2">

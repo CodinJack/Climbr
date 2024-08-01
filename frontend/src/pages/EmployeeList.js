@@ -12,6 +12,7 @@ export default function EmployeeList() {
   const [newEmployee, setNewEmployee] = useState({
     name: '',
     employeeID: '',
+    password: '',
     totalPoints: 0,
   });
   const [searchQuery, setSearchQuery] = useState('');
@@ -57,7 +58,7 @@ export default function EmployeeList() {
 
       const updatedEmployees = [...employees, data];
       setEmployees(updatedEmployees);
-      setNewEmployee({ name: '', employeeID: '', totalPoints: 0 });
+      setNewEmployee({ name: '', employeeID: '', password: '', totalPoints: 0 });
       setModalOpen(false);
     } catch (error) {
       console.error('Error adding employee:', error);
@@ -73,20 +74,27 @@ export default function EmployeeList() {
     <div className="container mx-auto py-12 px-6 min-h-screen text-white">
       <Navbar />
       <div className="container-fluid mx-auto py-12 px-6">
-      <div className="grid grid-cols-3 gap-4 sticky top-16 py-6 z-0">
-  <h1 className="col-span-1 text-white text-3xl font-bold">Employees</h1>
-  <div className="col-span-1">
-    <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-  </div>
-  <div className="col-span-1 flex justify-end">
-    <button
-      onClick={() => setModalOpen(true)}
-      className="bg-purple-500 text-white font-medium text-xl px-3 py-2 rounded-lg shadow-lg hover:bg-purple-600 transition duration-300 ease-in-out transform hover:scale-105"
-    >
-      Add an employee
-    </button>
-  </div>
-</div>
+        <div className="grid grid-cols-3 gap-4 top-16 py-6 z-0">
+          <h1 className="col-span-1 text-white text-3xl font-bold">Employees</h1>
+          <div className="col-span-1">
+            <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+          </div>
+          <div className="col-span-1 flex justify-end space-x-4">
+            <button
+              onClick={() => setModalOpen(true)}
+              className="bg-purple-500 text-white font-medium text-xl px-3 py-2 rounded-lg shadow-lg hover:bg-purple-600 transition duration-300 ease-in-out transform hover:scale-105"
+            >
+              Add an employee
+            </button>
+            <Link to="/leaderboard">
+              <button
+                className="bg-blue-500 text-white font-medium text-xl px-3 py-2 rounded-lg shadow-lg hover:bg-blue-600 transition duration-300 ease-in-out transform hover:scale-105"
+              >
+                View Leaderboard
+              </button>
+            </Link>
+          </div>
+        </div>
 
         <div className="flex flex-wrap justify-center">
           {filteredEmployees.map((employee) => (
@@ -100,7 +108,6 @@ export default function EmployeeList() {
           ))}
         </div>
       </div>
-
       <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
         <form>
           <div className="mb-2">
@@ -119,6 +126,16 @@ export default function EmployeeList() {
               type="text"
               name="employeeID"
               value={newEmployee.employeeID}
+              onChange={handleInputChange}
+              className="w-full text-black px-3 py-2 border rounded-lg mb-2"
+            />
+          </div>
+          <div className="mb-2">
+            <label className="block text-gray-700 text-sm font-bold mb-2">Password</label>
+            <input
+              type="password"
+              name="password"
+              value={newEmployee.password}
               onChange={handleInputChange}
               className="w-full text-black px-3 py-2 border rounded-lg mb-2"
             />
