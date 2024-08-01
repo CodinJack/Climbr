@@ -2,8 +2,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const jwt = require('jsonwebtoken');
-const User = require('./models/userModel'); // Adjust the path as necessary
 require('dotenv').config();
 
 const app = express();
@@ -20,9 +18,6 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Routes
-const authRoutes = require('./routes/auth');
-app.use('/auth', authRoutes);
-
 const employeeRoutes = require('./routes/employees');
 app.use('/employees', employeeRoutes);
 

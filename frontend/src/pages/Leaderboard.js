@@ -27,7 +27,7 @@ export default function Leaderboard() {
   }, []);
 
   return (
-    <div className="container mx-auto py-12 px-6 min-h-screen text-white">
+    <div className="container mx-auto py-12 px-6 min-h-screen text-white bg-gray-900">
       <Navbar />
       <div className="mt-12">
         <h2 className="text-white text-3xl font-bold text-center">Leaderboard</h2>
@@ -43,6 +43,7 @@ export default function Leaderboard() {
               <div
                 key={employee._id}
                 className={`${bgColor} p-4 rounded-lg shadow-lg transform transition-transform hover:scale-105`}
+                data-aos="fade-up" 
               >
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold">

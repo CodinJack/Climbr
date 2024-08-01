@@ -58,7 +58,7 @@ export default function TaskDetail({ tasks, employees }) {
   };
 
   return (
-    <div className="container mx-auto py-12 px-6 min-h-screen text-white">
+    <div className="container mx-auto py-12 px-6 min-h-screen text-white bg-gray-900">
       <Navbar />
       <div className="">
         <button

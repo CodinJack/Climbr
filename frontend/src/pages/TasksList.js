@@ -128,7 +128,7 @@ export default function TasksList() {
   );
 
   return (
-    <div className="container mx-auto py-12 px-6 min-h-screen text-white">
+    <div className="container mx-auto py-12 px-6 min-h-screen text-white bg-gray-900">
       <Navbar />
       <div className="container-fluid mx-auto py-12 px-6">
         <div className="grid grid-cols-3 gap-4 top-16 py-6 z-0">

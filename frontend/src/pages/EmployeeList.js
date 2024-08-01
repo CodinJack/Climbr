@@ -13,6 +13,7 @@ export default function EmployeeList() {
     name: '',
     employeeID: '',
     password: '',
+    tasks:[],
     totalPoints: 0,
   });
   const [searchQuery, setSearchQuery] = useState('');
@@ -42,23 +43,27 @@ export default function EmployeeList() {
   };
 
   const handleAddEmployee = async () => {
+    console.log('Attempting to add employee:', newEmployee);
     try {
       const response = await fetch('http://localhost:5000/employees', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newEmployee),
       });
-
+  
+      console.log('Response status:', response.status);
+      const responseText = await response.text();
+      console.log('Response text:', responseText);
+  
       if (!response.ok) {
-        throw new Error('Error adding employee');
+        throw new Error(responseText || 'Error adding employee');
       }
-
-      const data = await response.json();
+  
+      const data = JSON.parse(responseText);
       console.log('Employee added successfully:', data);
-
-      const updatedEmployees = [...employees, data];
-      setEmployees(updatedEmployees);
-      setNewEmployee({ name: '', employeeID: '', password: '', totalPoints: 0 });
+  
+      setEmployees([...employees, data]);
+      setNewEmployee({ name: '', employeeID: '', password: '', tasks: [], totalPoints: 0 });
       setModalOpen(false);
     } catch (error) {
       console.error('Error adding employee:', error);
@@ -71,7 +76,7 @@ export default function EmployeeList() {
   );
 
   return (
-    <div className="container mx-auto py-12 px-6 min-h-screen text-white">
+    <div className="container mx-auto py-12 px-6 min-h-screen text-white bg-gray-900">
       <Navbar />
       <div className="container-fluid mx-auto py-12 px-6">
         <div className="grid grid-cols-3 gap-4 top-16 py-6 z-0">

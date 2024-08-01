@@ -5,7 +5,6 @@ import EmployeeList from './pages/EmployeeList';
 import TaskDetail from './pages/TaskDetail';
 import TasksList from './pages/TasksList';
 import Leaderboard from './pages/Leaderboard';
-import Login from './pages/Login';
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -44,8 +43,7 @@ function App() {
     <BrowserRouter>
       <div className="App container-fluid vh-100 d-flex flex-column justify-content-center align-items-center">
         <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/tasks" element={<TasksList/>}/>
+          <Route path="/" element={<TasksList />} />
           <Route path="/tasks/:id" element={<TaskDetail tasks={tasks} employees={employees} />} />
           <Route path="/employees" element={<EmployeeList />} />
           <Route path="/employees/:id" element={<EmployeeDetail />} />
