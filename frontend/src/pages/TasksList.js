@@ -42,20 +42,19 @@ export default function TasksList() {
         const response = await fetch('https://climbr.onrender.com/tasks');
         const data = await response.json();
 
-        const completedTasks = data.filter(task => task.completed);
-        const nonCompletedTasks = data.filter(task => !task.completed);
+        const updatedTasks = data.filter(task => employees.some(emp => emp._id === task.assignedTo));
+        
+        const completedTasks = updatedTasks.filter(task => task.completed);
+        const nonCompletedTasks = updatedTasks.filter(task => !task.completed);
 
-        nonCompletedTasks.sort((a, b) => b.points - a.points); // Sort by points in descending order
+        nonCompletedTasks.sort((a, b) => b.points - a.points); //sort by points in descending order
 
         setTasks([...nonCompletedTasks, ...completedTasks]);
       } catch (error) {
         console.error('Error fetching tasks:', error);
       }
     };
-    fetchData();
-  }, []);
 
-  useEffect(() => {
     const fetchEmployees = async () => {
       try {
         const response = await fetch('https://climbr.onrender.com/employees');
@@ -66,8 +65,29 @@ export default function TasksList() {
       }
     };
 
-    fetchEmployees();
+    fetchEmployees().then(fetchData);
   }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('https://climbr.onrender.com/tasks');
+        const data = await response.json();
+
+        const updatedTasks = data.filter(task => employees.some(emp => emp._id === task.assignedTo));
+        
+        const completedTasks = updatedTasks.filter(task => task.completed);
+        const nonCompletedTasks = updatedTasks.filter(task => !task.completed);
+
+        nonCompletedTasks.sort((a, b) => b.points - a.points); //sort by points in descending order
+
+        setTasks([...nonCompletedTasks, ...completedTasks]);
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    };
+    fetchData();
+  }, [employees]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -107,8 +127,10 @@ export default function TasksList() {
       const tasksResponse = await fetch('https://climbr.onrender.com/tasks');
       const tasksData = await tasksResponse.json();
 
-      const completedTasks = tasksData.filter(task => task.completed);
-      const nonCompletedTasks = tasksData.filter(task => !task.completed);
+      const updatedTasks = tasksData.filter(task => employees.some(emp => emp._id === task.assignedTo));
+      
+      const completedTasks = updatedTasks.filter(task => task.completed);
+      const nonCompletedTasks = updatedTasks.filter(task => !task.completed);
 
       nonCompletedTasks.sort((a, b) => b.points - a.points);
 
