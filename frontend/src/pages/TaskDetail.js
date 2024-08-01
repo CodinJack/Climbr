@@ -23,7 +23,7 @@ export default function TaskDetail({ tasks, employees }) {
     try {
       if (!task.completed) {
         task.completed = true;
-        const response = await fetch(`http://localhost:5000/tasks/${id}`, {
+        const response = await fetch(`https://climbr.onrender.com/tasks/${id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ completed: true }),
@@ -43,7 +43,7 @@ export default function TaskDetail({ tasks, employees }) {
 
   const handleDeleteTask = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/tasks/${id}`, {
+      const response = await fetch(`https://climbr.onrender.com/tasks/${id}`, {
         method: 'DELETE',
       });
       if (!response.ok) {

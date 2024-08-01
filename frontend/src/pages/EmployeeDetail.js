@@ -15,7 +15,7 @@ export default function EmployeeDetail() {
   useEffect(() => {
     const fetchEmployee = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/employees/${id}`);
+        const response = await fetch(`https://climbr.onrender.com/employees/${id}`);
         const data = await response.json();
         setEmployee(data);
         if (data.tasks) {
@@ -35,7 +35,7 @@ export default function EmployeeDetail() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/tasks`);
+        const response = await fetch(`https://climbr.onrender.com/tasks`);
         const data = await response.json();
         const assignedTasks = data.filter(task => taskIDs.includes(task._id));
         
@@ -58,7 +58,7 @@ export default function EmployeeDetail() {
 
   const handleRemoveEmployee = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/employees/${id}`, {
+      const response = await fetch(`https://climbr.onrender.com/employees/${id}`, {
         method: 'DELETE',
       });
       if (response.ok) {

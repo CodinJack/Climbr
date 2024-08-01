@@ -26,7 +26,7 @@ export default function EmployeeList() {
 
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:5000/employees');
+        const response = await fetch('https://climbr.onrender.com/employees');
         const data = await response.json();
         setEmployees(data);
       } catch (error) {
@@ -45,7 +45,7 @@ export default function EmployeeList() {
   const handleAddEmployee = async () => {
     console.log('Attempting to add employee:', newEmployee);
     try {
-      const response = await fetch('http://localhost:5000/employees', {
+      const response = await fetch('https://climbr.onrender.com/employees', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newEmployee),

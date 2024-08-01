@@ -39,7 +39,7 @@ export default function TasksList() {
 
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:5000/tasks');
+        const response = await fetch('https://climbr.onrender.com/tasks');
         const data = await response.json();
 
         const completedTasks = data.filter(task => task.completed);
@@ -58,7 +58,7 @@ export default function TasksList() {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await fetch('http://localhost:5000/employees');
+        const response = await fetch('https://climbr.onrender.com/employees');
         const data = await response.json();
         setEmployees(data);
       } catch (error) {
@@ -94,7 +94,7 @@ export default function TasksList() {
       }));
 
       await Promise.all(tasksToCreate.map(async task => {
-        const response = await fetch('http://localhost:5000/tasks', {
+        const response = await fetch('https://climbr.onrender.com/tasks', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(task),
@@ -104,7 +104,7 @@ export default function TasksList() {
         }
       }));
 
-      const tasksResponse = await fetch('http://localhost:5000/tasks');
+      const tasksResponse = await fetch('https://climbr.onrender.com/tasks');
       const tasksData = await tasksResponse.json();
 
       const completedTasks = tasksData.filter(task => task.completed);

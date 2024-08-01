@@ -14,7 +14,7 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:5000/tasks');
+        const response = await fetch('https://climbr.onrender.com/tasks');
         const data = await response.json();
         setTasks(data);
       } catch (error) {
@@ -28,7 +28,7 @@ function App() {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await fetch('http://localhost:5000/employees');
+        const response = await fetch('https://climbr.onrender.com/employees');
         const data = await response.json();
         setEmployees(data);
       } catch (error) {
