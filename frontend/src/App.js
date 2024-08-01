@@ -11,6 +11,7 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [employees, setEmployees] = useState([]);
 
+  //fetching the tasks from backend
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -24,6 +25,7 @@ function App() {
     fetchData();
   }, []);
 
+  //fetching the employeed from backend
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
@@ -31,7 +33,7 @@ function App() {
         const data = await response.json();
         setEmployees(data);
       } catch (error) {
-        console.error('Error fetching employees:', error);
+        console.error('Error fetching the employees: ', error);
       }
     };
 
@@ -42,12 +44,12 @@ function App() {
     <BrowserRouter>
       <div className="App container-fluid vh-100 d-flex flex-column justify-content-center align-items-center">
         <Routes>
-          <Route path="/" element={<TasksList />} />
+          <Route path="/" element={<Login />} />
+          <Route path="/tasks" element={<TasksList/>}/>
           <Route path="/tasks/:id" element={<TaskDetail tasks={tasks} employees={employees} />} />
           <Route path="/employees" element={<EmployeeList />} />
           <Route path="/employees/:id" element={<EmployeeDetail />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/login" element={<Login />} />
         </Routes>
       </div>
     </BrowserRouter>
