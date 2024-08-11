@@ -23,7 +23,7 @@ exports.login = async (req, res) => {
   }
 };
 
- 
+
 exports.signupManager = async (req, res) => {
   const { employeeID, name, password } = req.body;
 
@@ -41,8 +41,10 @@ exports.signupManager = async (req, res) => {
       password: hashedPassword,
       role: 'manager',
     });
+    const token = jwt.sign({ id: employee._id, role: employee.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     await employee.save();
+    res.json({ token });
     res.status(201).json({ message: 'Manager registered successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
