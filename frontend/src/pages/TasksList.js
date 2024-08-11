@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import {jwtDecode} from 'jwt-decode';
 import Navbar from '../components/Nav';
 import Task from '../components/Task';
 import Modal from '../components/TaskModal';
@@ -11,6 +12,7 @@ export default function TasksList() {
   const [tasks, setTasks] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isManager, setIsManager] = useState(false);
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
@@ -32,10 +34,18 @@ export default function TasksList() {
   };
 
   useEffect(() => {
+    //animation on scroll
     AOS.init({
       duration: 1000,
       once: true
     });
+
+    //check whether current user is a manager or not
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decoded = jwtDecode(token);
+      setIsManager(decoded.role === 'manager');
+    }
 
     const fetchData = async () => {
       try {
@@ -43,7 +53,7 @@ export default function TasksList() {
         const data = await response.json();
 
         const updatedTasks = data.filter(task => employees.some(emp => emp._id === task.assignedTo));
-        
+
         const completedTasks = updatedTasks.filter(task => task.completed);
         const nonCompletedTasks = updatedTasks.filter(task => !task.completed);
 
@@ -75,7 +85,7 @@ export default function TasksList() {
         const data = await response.json();
 
         const updatedTasks = data.filter(task => employees.some(emp => emp._id === task.assignedTo));
-        
+
         const completedTasks = updatedTasks.filter(task => task.completed);
         const nonCompletedTasks = updatedTasks.filter(task => !task.completed);
 
@@ -128,7 +138,7 @@ export default function TasksList() {
       const tasksData = await tasksResponse.json();
 
       const updatedTasks = tasksData.filter(task => employees.some(emp => emp._id === task.assignedTo));
-      
+
       const completedTasks = updatedTasks.filter(task => task.completed);
       const nonCompletedTasks = updatedTasks.filter(task => !task.completed);
 
@@ -155,32 +165,40 @@ export default function TasksList() {
       <div className="container-fluid mx-auto py-12 px-6">
         <div className="grid grid-cols-3 gap-4 top-16 py-6 z-0">
           <h1 className="col-span-1 text-white text-3xl font-bold">Tasks</h1>
+
+          {/*search bar */}
           <div className="col-span-1">
             <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
           </div>
-          <div className="col-span-1 flex justify-end">
+
+          {/*"create a task" button */}
+          {isManager && (
+            <div className="col-span-1 flex justify-end">
             <button
               onClick={() => setModalOpen(true)}
               className='bg-purple-500 text-white font-medium text-xl px-3 py-2 rounded-lg shadow-lg hover:bg-purple-600 transition duration-300 ease-in-out transform hover:scale-105'
             >
               Create a task
             </button>
-          </div> 
+          </div>
+          )}
         </div>
-        
+
+        {/*display all tasks */}
         <div className="space-y-4 pt-2">
           {filteredTasks.map((task) => (
-            <Task 
-              data-aos="fade-up" 
+            <Task
+              data-aos="fade-up"
               key={task.id}
-              name={getEmployeeName(task.assignedTo)} 
-              assignedTo={getEmployeeID(task.assignedTo)} 
+              name={getEmployeeName(task.assignedTo)}
+              assignedTo={getEmployeeID(task.assignedTo)}
               task={task}
             />
           ))}
         </div>
       </div>
 
+      {/*"add a task" modal*/}
       <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
         <form>
           <div className="mb-2">

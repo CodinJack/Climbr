@@ -8,6 +8,8 @@ const app = express();
 const port = process.env.PORT;
 const uri = process.env.MONGO_URI;
 
+const { auth, isManager } = require('./middleware/authMiddleware');
+
 //db connect
 mongoose.connect(uri)
   .then(() => console.log('MongoDB connected successfully!'))
@@ -18,11 +20,14 @@ app.use(cors());
 app.use(bodyParser.json());
 
 //routes
-const employeeRoutes = require('./routes/employees');
-app.use('/employees', employeeRoutes);
+const employeeRoutes = require('./routes/employeeRoute');
+app.use('/employees', auth, isManager, employeeRoutes);
 
-const taskRoutes = require('./routes/tasks');
-app.use('/tasks', taskRoutes);
+const taskRoutes = require('./routes/taskRoute');
+app.use('/tasks', auth, taskRoutes);
 
-//start server
+const authRoutes = require('./routes/authRoute');
+app.use('/auth', authRoutes);
+
+// Start server
 app.listen(port, () => console.log(`Server listening on port ${port}`));

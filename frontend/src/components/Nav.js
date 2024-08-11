@@ -1,7 +1,15 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function Navbar() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+    window.location.reload();
+  };
+
   return (
     <nav className="bg-gray-800 fixed-top shadow w-full z-10">
       <div className="container mx-auto px-4 py-4 grid grid-cols-3 items-center">
@@ -18,6 +26,14 @@ export default function Navbar() {
             </li>
             <li>
               <Link className="text-lg font-semibold text-gray-300 hover:text-purple-200 transition-colors" to="/employees">Employees</Link>
+            </li>
+            <li>
+              <button
+                onClick={handleLogout}
+                className="text-lg font-semibold text-gray-300 hover:text-red-200 transition-colors"
+              >
+                Logout
+              </button>
             </li>
           </ul>
         </div>

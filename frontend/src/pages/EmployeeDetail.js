@@ -73,6 +73,11 @@ export default function EmployeeDetail() {
     }
   };
 
+  const calculateTaskCompletionRate = () => {
+    const completedTasks = tasks.filter(task => task.completed).length;
+    return (completedTasks / tasks.length) * 100;
+  };
+
   if (loading) {
     return <div className="text-white">Loading...</div>;
   }
@@ -106,7 +111,7 @@ export default function EmployeeDetail() {
         </div>
         
         <p className="text-gray-300 mb-6">Employee ID: {employee.employeeID}</p>
-
+        <p>Task Completion Rate: {calculateTaskCompletionRate()}%</p>
         <div className="text-2xl font-semibold text-purple-400 mb-4">TaskIDs Assigned:</div>
         <div className="space-y-4">
           {tasks.length === 0 && <p className="text-white">No taskIDs assigned to this employee.</p>}
