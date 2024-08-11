@@ -22,3 +22,30 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+ 
+exports.signupManager = async (req, res) => {
+  const { employeeID, name, password } = req.body;
+
+  try {
+    let employee = await Employee.findOne({ employeeID });
+    if (employee) {
+      return res.status(400).json({ message: 'Manager with this ID already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    employee = new Employee({
+      employeeID,
+      name,
+      password: hashedPassword,
+      role: 'manager',
+    });
+
+    await employee.save();
+    res.status(201).json({ message: 'Manager registered successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+

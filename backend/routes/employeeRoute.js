@@ -6,5 +6,6 @@ router.get('/', employeeController.getEmployees)
       .get('/:id', employeeController.getEmployeeById)
       .post('/', employeeController.createEmployee)
       .delete('/:id', employeeController.deleteEmployee)
+      .get('/profile', auth, getProfile);
 
 module.exports = router;

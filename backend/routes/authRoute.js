@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { login } = require('../controllers/authController');
 
-router.post('/', login);
+router.post('/', login)
+      .post('/signup-manager', signupManager);
 
 module.exports = router;
