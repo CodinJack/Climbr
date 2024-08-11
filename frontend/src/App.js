@@ -57,6 +57,7 @@ function App() {
           <Route path="/employees" element={token ? <EmployeeList /> : <Navigate to="/login" />} />
           <Route path="/employees/:id" element={token ? <EmployeeDetail /> : <Navigate to="/login" />} />
           <Route path="/leaderboard" element={token ? <Leaderboard /> : <Navigate to="/login" />} />
+          <Route path="/profile" element={token? <ManagerProfile /> : <Navigate to="/login"/>}/>
         </Routes>
       </div>
     </BrowserRouter>
