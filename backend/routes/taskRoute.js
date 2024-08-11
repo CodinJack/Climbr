@@ -7,6 +7,6 @@ router.get('/', taskController.getTasks)
       .post('/', taskController.createTask)
       .delete('/:id', taskController.deleteTask)
       .patch('/:id',taskController.patchTask)
-      .patch('/:id/verify', taskController.verifyTask);
+      .patch('/:id/verify', auth, isManager, taskController.verifyTask);
           
 module.exports = router;
