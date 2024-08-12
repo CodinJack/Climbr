@@ -28,6 +28,9 @@ exports.signupManager = async (req, res) => {
   const { employeeID, name, password } = req.body;
 
   try {
+    if (!employeeID || !name || !password) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
     let employee = await Employee.findOne({ employeeID });
     if (employee) {
       return res.status(400).json({ message: 'Manager with this ID already exists' });

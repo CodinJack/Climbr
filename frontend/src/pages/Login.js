@@ -20,7 +20,7 @@ export default function Login() {
                 response = await fetch('https://climbr.onrender.com/auth/signup-manager', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ employeeID, password }),
+                    body: JSON.stringify({ employeeID, name, password }),
                 });
             }
             else {
@@ -34,12 +34,12 @@ export default function Login() {
             const data = await response.json();
             if (response.ok) {
                 localStorage.setItem('token', data.token);
+                navigate('/tasks');
             }
             else {
+                console.error('Error response from server:', data.message);
                 setError(data.message);
             }
-
-            navigate('/tasks');
         } catch (error) {
         console.error('Error logging in:', error);
         setError('Server error');
