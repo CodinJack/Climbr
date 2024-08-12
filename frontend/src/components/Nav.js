@@ -3,11 +3,22 @@ import { Link, useNavigate } from 'react-router-dom';
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('https://climbr.onrender.com/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-    window.location.reload();
+      if (response.ok) {
+        navigate('/login');
+        window.location.reload();
+      } else {
+        console.error('Failed to log out');
+      }
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
   };
 
   return (

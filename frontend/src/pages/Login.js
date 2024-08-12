@@ -16,6 +16,15 @@ export default function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);  // Start loading
+        setError(''); // Clear previous errors
+
+        // Set a timeout to check if loading takes too long
+        const timeoutId = setTimeout(() => {
+            setLoading(false);
+            setError('The request took too long. Please try again.');
+            navigate('/login');
+        }, 10000); // 10 seconds
+
         try {
             let response;
             if (newManager) {
@@ -35,12 +44,15 @@ export default function Login() {
             const data = await response.json();
             if (response.ok) {
                 localStorage.setItem('token', data.token);
+                clearTimeout(timeoutId); // Clear the timeout if the request completes
                 navigate('/tasks');
             } else {
+                clearTimeout(timeoutId); // Clear the timeout if the request completes
                 console.error('Error response from server:', data.message);
                 setError(data.message);
             }
         } catch (error) {
+            clearTimeout(timeoutId); // Clear the timeout if the request completes
             console.error('Error logging in:', error);
             setError('Server error');
         } finally {
@@ -51,7 +63,7 @@ export default function Login() {
     if (loading) {
         return <Loading />; // Display the loading spinner when loading
     }
-
+    
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-900">
             <div className="w-full max-w-md p-8 space-y-8 bg-gray-800 rounded-lg shadow-lg">

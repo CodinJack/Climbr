@@ -67,3 +67,10 @@ exports.signupManager = async (req, res) => {
   }
 };
 
+exports.logout = (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    sameSite: 'strict',
+  });
+  res.status(200).json({ message: 'Logged out successfully' });
+};
