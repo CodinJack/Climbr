@@ -15,10 +15,3 @@ exports.auth = (req, res, next) => {
     res.status(401).json({ message: 'Token is not valid' });
   }
 };
-
-exports.isManager = (req, res, next) => {
-  if (req.user.role !== 'manager') {
-    return res.status(403).json({ message: 'Access denied' });
-  }
-  next();
-};

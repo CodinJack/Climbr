@@ -17,12 +17,19 @@ exports.login = async (req, res) => {
     }
 
     const token = jwt.sign({ id: employee._id, role: employee.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token });
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      sameSite: 'strict', // Helps to prevent CSRF attacks
+      maxAge: 3600000 // 1 hour
+    });
+
+    res.json({ message: 'Login successful' });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
 
 exports.signupManager = async (req, res) => {
   const { employeeID, name, password } = req.body;
@@ -46,9 +53,15 @@ exports.signupManager = async (req, res) => {
     });
     const token = jwt.sign({ id: employee._id, role: employee.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      sameSite: 'strict', // Helps to prevent CSRF attacks
+      maxAge: 3600000 // 1 hour
+    });
+
     await employee.save();
-    res.json({ token });
-    res.status(201).json({ message: 'Manager registered successfully' });
+    res.json({ message: 'Manager registered successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }

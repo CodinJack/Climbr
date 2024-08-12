@@ -14,7 +14,7 @@ export default function Navbar() {
     <nav className="bg-gray-800 fixed-top shadow w-full z-10">
       <div className="container mx-auto px-4 py-4 grid grid-cols-3 items-center">
         <div>
-          <Link className="text-3xl ml-8 font-bold text-purple-400" to="/">Climbr.</Link>
+          <Link className="text-3xl ml-8 font-bold text-purple-400" to="/tasks">Climbr.</Link>
         </div>
         <div className="hidden md:block text-center">
           <h1 className='text-xl font-semibold text-gray-300'>Task Manager</h1>
