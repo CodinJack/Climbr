@@ -4,6 +4,7 @@ import Navbar from '../components/Nav';
 import Modal from '../components/EmployeeModal';
 import Search from '../components/Search';
 import AOS from 'aos';
+import {jwtDecode} from 'jwt-decode';
 import 'aos/dist/aos.css';
 
 export default function EmployeeList() {
@@ -45,10 +46,20 @@ export default function EmployeeList() {
   const handleAddEmployee = async () => {
     console.log('Attempting to add employee:', newEmployee);
     try {
+      // Extract the token from the cookies
+      const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
+      
+      // Decode the token to get the manager's ID
+      const decodedToken = jwtDecode(token);
+      const managerID = decodedToken.id; // Assuming the user ID is stored as `id` in the token
+  
+      // Add manager ID to the new employee object
+      const employeeToAdd = { ...newEmployee, manager: managerID };
+  
       const response = await fetch('https://climbr.onrender.com/employees', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newEmployee),
+        body: JSON.stringify(employeeToAdd),
       });
   
       console.log('Response status:', response.status);
@@ -63,14 +74,14 @@ export default function EmployeeList() {
       console.log('Employee added successfully:', data);
   
       setEmployees([...employees, data]);
-      setNewEmployee({ name: '', employeeID: '', password: '', tasks: [], totalPoints: 0 });
+      setNewEmployee({ name: '', employeeID: '', password: '', tasks: [], totalPoints: 0, role: "employee", manager: '' });
       setModalOpen(false);
     } catch (error) {
       console.error('Error adding employee:', error);
     }
   };
 
-  const filteredEmployees = employees.filter(employee =>
+    const filteredEmployees = employees.filter(employee =>
     employee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     employee.employeeID.toLowerCase().includes(searchQuery.toLowerCase())
   );
