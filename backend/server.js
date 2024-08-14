@@ -17,7 +17,10 @@ mongoose.connect(uri)
   .catch(err => console.error('Error connecting to MongoDB:', err));
 
 //middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+}));
 app.use(bodyParser.json());
 app.use(cookieParser());
 

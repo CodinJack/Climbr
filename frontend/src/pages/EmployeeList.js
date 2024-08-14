@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Nav';
-import Modal from '../components/TaskModal';
+import Modal from '../components/EmployeeModal';
 import Search from '../components/Search';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -102,7 +102,7 @@ export default function EmployeeList() {
         </div>
 
         <div className="flex flex-wrap justify-center">
-          {filteredEmployees.map((employee) => (
+          {filteredEmployees.size && filteredEmployees.map((employee) => (
             <Link data-aos="fade-up" to={`/employees/${employee._id}`} key={employee._id}>
               <div className="bg-gray-800 p-10 rounded-lg shadow-md mx-4 my-4 max-w-sm text-center">
                 <h3 className="text-2xl font-semibold text-purple-400">{employee.name}</h3>
@@ -111,6 +111,10 @@ export default function EmployeeList() {
               </div>
             </Link>
           ))}
+          {filteredEmployees.size===0 && 
+          (<p>
+            No employee found.
+          </p>)}
         </div>
       </div>
       <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
