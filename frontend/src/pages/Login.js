@@ -34,7 +34,7 @@ export default function Login() {
                     body: JSON.stringify({ employeeID, name, password }),
                 });
             } else {
-                response = await fetch('https://climbr.onrender.com/auth/', {
+                response = await fetch('https://climbr.onrender.com/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ employeeID, password, role }),
@@ -44,24 +44,24 @@ export default function Login() {
             const data = await response.json();
             if (response.ok) {
                 localStorage.setItem('token', data.token);
-                clearTimeout(timeoutId); // Clear the timeout if the request completes
+                clearTimeout(timeoutId);
                 navigate('/tasks');
             } else {
-                clearTimeout(timeoutId); // Clear the timeout if the request completes
+                clearTimeout(timeoutId);
                 console.error('Error response from server:', data.message);
                 setError(data.message);
             }
         } catch (error) {
-            clearTimeout(timeoutId); // Clear the timeout if the request completes
+            clearTimeout(timeoutId);
             console.error('Error logging in:', error);
             setError('Server error');
         } finally {
-            setLoading(false);  // Stop loading
+            setLoading(false);
         }
     };
 
     if (loading) {
-        return <Loading />; // Display the loading spinner when loading
+        return <Loading />;
     }
     
     return (

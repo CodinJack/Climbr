@@ -46,33 +46,29 @@ export default function EmployeeList() {
   const handleAddEmployee = async () => {
     console.log('Attempting to add employee:', newEmployee);
     try {
-      // Extract the token from the cookies
       const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
-      
-      // Decode the token to get the manager's ID
       const decodedToken = jwtDecode(token);
-      const managerID = decodedToken.id; // Assuming the user ID is stored as `id` in the token
-  
-      // Add manager ID to the new employee object
+      const managerID = decodedToken.id;
+
       const employeeToAdd = { ...newEmployee, manager: managerID };
-  
+
       const response = await fetch('https://climbr.onrender.com/employees', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(employeeToAdd),
       });
-  
+
       console.log('Response status:', response.status);
       const responseText = await response.text();
       console.log('Response text:', responseText);
-  
+
       if (!response.ok) {
         throw new Error(responseText || 'Error adding employee');
       }
-  
+
       const data = JSON.parse(responseText);
       console.log('Employee added successfully:', data);
-  
+
       setEmployees([...employees, data]);
       setNewEmployee({ name: '', employeeID: '', password: '', tasks: [], totalPoints: 0, role: "employee", manager: '' });
       setModalOpen(false);
@@ -80,6 +76,7 @@ export default function EmployeeList() {
       console.error('Error adding employee:', error);
     }
   };
+
 
     const filteredEmployees = employees.filter(employee =>
     employee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
