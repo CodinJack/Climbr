@@ -16,14 +16,20 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: employee._id, role: employee.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign(
+      { id: employee._id, role: employee.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    
+    console.log('Generated Token:', token);
 
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-      sameSite: 'strict', // Helps to prevent CSRF attacks
+      secure: process.env.NODE_ENV === 'production', // Secure cookie in production
+      sameSite: 'strict',
       maxAge: 3600000 // 1 hour
-    });
+    });    
 
     res.json({ message: 'Login successful' });
   } catch (error) {

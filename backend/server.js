@@ -32,7 +32,7 @@ const taskRoutes = require('./routes/taskRoute');
 app.use('/tasks', auth, taskRoutes);
 
 const authRoutes = require('./routes/authRoute');
-app.use('/auth', authRoutes);
+app.use('/auth', auth, authRoutes);
 
 //start server
 app.listen(port, () => console.log(`Server listening on port ${port}`));
