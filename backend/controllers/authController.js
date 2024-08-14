@@ -56,9 +56,9 @@ exports.signupManager = async (req, res) => {
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-      sameSite: 'strict', // Helps to prevent CSRF attacks
+      sameSite: 'strict', 
       maxAge: 3600000 // 1 hour
-    });
+    });    
 
     await employee.save();
     res.json({ message: 'Manager registered successfully' });

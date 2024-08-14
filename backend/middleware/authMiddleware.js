@@ -1,7 +1,10 @@
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
 
-exports.auth = (req, res, next) => {
+const auth = (req, res, next) => {
   const token = req.cookies.token; 
+  console.log('Token:', token);
   
   if (!token) {
     return res.status(401).json({ message: 'No token, authorization denied' });
@@ -12,6 +15,9 @@ exports.auth = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
+    console.error("JWT Verification failed:", error);
     res.status(401).json({ message: 'Token is not valid' });
   }
 };
+
+module.exports = auth;
