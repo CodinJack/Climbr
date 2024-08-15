@@ -1,18 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import {jwtDecode} from 'jwt-decode';
+import React, { useEffect, useState, useMemo } from 'react';
 import Navbar from '../components/Nav';
 import Task from '../components/Task';
 import Modal from '../components/TaskModal';
 import Search from '../components/Search';
 import AOS from 'aos';
+import { useNavigate } from 'react-router-dom';
+import { useCookies } from 'react-cookie';
+import {jwtDecode} from 'jwt-decode'; // Import jwt-decode
 import 'aos/dist/aos.css';
 
-export default function TasksList() {
+export default function TasksList({ tasks: initialTasks, employees: initialEmployees }) {
+  const [tasks, setTasks] = useState(initialTasks);
+  const [employees, setEmployees] = useState(initialEmployees);
   const [empID, setEmpID] = useState('');
-  const [tasks, setTasks] = useState([]);
-  const [employees, setEmployees] = useState([]);
   const [isModalOpen, setModalOpen] = useState(false);
   const [isManager, setIsManager] = useState(false);
+  const [cookies] = useCookies(['token']);
+  const navigate = useNavigate();
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
@@ -34,70 +38,50 @@ export default function TasksList() {
   };
 
   useEffect(() => {
-    //animation on scroll
     AOS.init({
       duration: 1000,
       once: true
     });
 
-    //check whether current user is a manager or not
-    const token = localStorage.getItem('token');
-    if (token) {
-      const decoded = jwtDecode(token);
-      setIsManager(decoded.role === 'manager');
-    }
+    console.log('Cookies:', cookies); // Log all cookies
+    console.log('Token:', cookies.token); // Log specific token
 
-    const fetchData = async () => {
-      try {
-        const response = await fetch('https://climbr.onrender.com/tasks');
-        const data = await response.json();
+    const decodeToken = () => {
+      if (cookies.token) {
+        try {
+          const decodedToken = jwtDecode(cookies.token);
+          const userId = decodedToken.id;
 
-        const updatedTasks = data.filter(task => employees.some(emp => emp._id === task.assignedTo));
+          console.log('Decoded Token:', decodedToken);
+          console.log('User ID:', userId);
 
-        const completedTasks = updatedTasks.filter(task => task.completed);
-        const nonCompletedTasks = updatedTasks.filter(task => !task.completed);
-
-        nonCompletedTasks.sort((a, b) => b.points - a.points); //sort by points in descending order
-
-        setTasks([...nonCompletedTasks, ...completedTasks]);
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
+          const user = employees.find(emp => emp._id === userId);
+          if (user) {
+            const isManagerRole = user.role === 'manager';
+            setIsManager(isManagerRole);
+            console.log('Is user a manager?', isManagerRole);
+          } else {
+            console.error('User not found');
+          }
+        } catch (error) {
+          console.error('Error decoding token:', error);
+        }
+      } else {
+        console.log("No token found in cookies");
       }
     };
 
-    const fetchEmployees = async () => {
-      try {
-        const response = await fetch('https://climbr.onrender.com/employees');
-        const data = await response.json();
-        setEmployees(data);
-      } catch (error) {
-        console.error('Error fetching employees:', error);
-      }
-    };
+    decodeToken();
+  }, [employees, cookies.token]);
 
-    fetchEmployees().then(fetchData);
-  }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('https://climbr.onrender.com/tasks');
-        const data = await response.json();
-
-        const updatedTasks = data.filter(task => employees.some(emp => emp._id === task.assignedTo));
-
-        const completedTasks = updatedTasks.filter(task => task.completed);
-        const nonCompletedTasks = updatedTasks.filter(task => !task.completed);
-
-        nonCompletedTasks.sort((a, b) => b.points - a.points); //sort by points in descending order
-
-        setTasks([...nonCompletedTasks, ...completedTasks]);
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
-      }
-    };
-    fetchData();
-  }, [employees]);
+  // Use useMemo to sort tasks only when tasks change
+  const sortedTasks = useMemo(() => {
+    const completedTasks = tasks.filter(task => task.completed);
+    const nonCompletedTasks = tasks.filter(task => !task.completed);
+    nonCompletedTasks.sort((a, b) => b.points - a.points);
+    return [...nonCompletedTasks, ...completedTasks];
+  }, [tasks]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -123,30 +107,21 @@ export default function TasksList() {
         assignedTo: empID,
       }));
 
-      await Promise.all(tasksToCreate.map(async task => {
-        const response = await fetch('https://climbr.onrender.com/tasks', {
+      const createdTasks = await Promise.all(tasksToCreate.map(async task => {
+        const response = await fetch(process.env.REACT_APP_BACKEND_LINK + '/tasks', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(task),
+          credentials: 'include'
         });
         if (!response.ok) {
           throw new Error('Error creating task');
         }
+        return response.json();
       }));
 
-      const tasksResponse = await fetch('https://climbr.onrender.com/tasks');
-      const tasksData = await tasksResponse.json();
-
-      const updatedTasks = tasksData.filter(task => employees.some(emp => emp._id === task.assignedTo));
-
-      const completedTasks = updatedTasks.filter(task => task.completed);
-      const nonCompletedTasks = updatedTasks.filter(task => !task.completed);
-
-      nonCompletedTasks.sort((a, b) => b.points - a.points);
-
-      setTasks([...nonCompletedTasks, ...completedTasks]);
+      setTasks(prevTasks => [...prevTasks, ...createdTasks]);
       setNewTask({ title: '', description: '', dueDate: '', points: '', assignedTo: '' });
-      window.location.reload();
     } catch (error) {
       console.error('Error creating task:', error);
     } finally {
@@ -154,7 +129,7 @@ export default function TasksList() {
     }
   };
 
-  const filteredTasks = tasks.filter(task =>
+  const filteredTasks = sortedTasks.filter(task =>
     task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     task.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -165,31 +140,25 @@ export default function TasksList() {
       <div className="container-fluid mx-auto py-12 px-6">
         <div className="grid grid-cols-3 gap-4 top-16 py-6 z-0">
           <h1 className="col-span-1 text-white text-3xl font-bold">Tasks</h1>
-
-          {/*search bar */}
           <div className="col-span-1">
             <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
           </div>
-
-          {/*"create a task" button */}
           {isManager && (
             <div className="col-span-1 flex justify-end">
-            <button
-              onClick={() => setModalOpen(true)}
-              className='bg-purple-500 text-white font-medium text-xl px-3 py-2 rounded-lg shadow-lg hover:bg-purple-600 transition duration-300 ease-in-out transform hover:scale-105'
-            >
-              Create a task
-            </button>
-          </div>
+              <button
+                onClick={() => setModalOpen(true)}
+                className='bg-purple-500 text-white font-medium text-xl px-3 py-2 rounded-lg shadow-lg hover:bg-purple-600 transition duration-300 ease-in-out transform hover:scale-105'
+              >
+                Create a task
+              </button>
+            </div>
           )}
         </div>
-
-        {/*display all tasks */}
         <div className="space-y-4 pt-2">
           {filteredTasks.map((task) => (
             <Task
               data-aos="fade-up"
-              key={task.id}
+              key={task._id}
               name={getEmployeeName(task.assignedTo)}
               assignedTo={getEmployeeID(task.assignedTo)}
               task={task}
@@ -197,7 +166,6 @@ export default function TasksList() {
           ))}
         </div>
       </div>
-
       {/*"add a task" modal*/}
       <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
         <form>

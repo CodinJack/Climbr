@@ -1,69 +1,66 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
-import Loading from '../components/Loading'; // Import the Loading component
+import Loading from '../components/Loading';
 
-export default function Login() {
+export default function Login({setToken }) {
     const [employeeID, setEmployeeID] = useState('');
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('employee');
     const [error, setError] = useState('');
     const [newManager, setNewManager] = useState(false);
-    const [loading, setLoading] = useState(false);  // Loading state
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);  // Start loading
-        setError(''); // Clear previous errors
+        setLoading(true);
+        setError('');
 
-        // Set a timeout to check if loading takes too long
         const timeoutId = setTimeout(() => {
             setLoading(false);
             setError('The request took too long. Please try again.');
             navigate('/login');
         }, 10000); // 10 seconds
 
-        try {
-            let response;
-            if (newManager) {
-                response = await fetch('https://climbr.onrender.com/auth/signup-manager', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ employeeID, name, password }),
-                });
-            } else {
-                response = await fetch('https://climbr.onrender.com/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ employeeID, password, role }),
-                });
-            }
+        const endpoint = newManager ? 'signup-manager' : 'login';
+        const body = newManager ? { employeeID, name, password } : { employeeID, password, role };
 
-            const data = await response.json();
+        try {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_LINK}/auth/${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(body),
+            });
+
             if (response.ok) {
-                localStorage.setItem('token', data.token);
+                setToken(true); // Update the token state in App.js
                 clearTimeout(timeoutId);
                 navigate('/tasks');
             } else {
-                clearTimeout(timeoutId);
-                console.error('Error response from server:', data.message);
-                setError(data.message);
+                const errorData = await response.json();
+                setError(errorData.message || 'An error occurred. Please try again.');
             }
         } catch (error) {
-            clearTimeout(timeoutId);
-            console.error('Error logging in:', error);
-            setError('Server error');
+            console.error('Error details:', {
+                message: error.message,
+                name: error.name,
+                url: `${process.env.REACT_APP_BACKEND_LINK}/auth/${endpoint}`,
+            });
+                    setError('Server error. Please try again later.');
         } finally {
+            clearTimeout(timeoutId);
             setLoading(false);
         }
     };
 
+
     if (loading) {
         return <Loading />;
     }
-    
+
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-900">
             <div className="w-full max-w-md p-8 space-y-8 bg-gray-800 rounded-lg shadow-lg">

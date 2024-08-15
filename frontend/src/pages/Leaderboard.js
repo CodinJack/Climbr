@@ -14,7 +14,9 @@ export default function Leaderboard() {
 
     const fetchEmployees = async () => {
       try {
-        const response = await fetch('https://climbr.onrender.com/employees');
+        const response = await fetch(process.env.REACT_APP_BACKEND_LINK + '/employees', {
+          credentials: 'include'
+        });
         const data = await response.json();
         const sortedEmployees = data.sort((a, b) => b.totalPoints - a.totalPoints);
         setEmployees(sortedEmployees);

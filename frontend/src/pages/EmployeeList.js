@@ -27,7 +27,9 @@ export default function EmployeeList() {
 
     const fetchData = async () => {
       try {
-        const response = await fetch('https://climbr.onrender.com/employees');
+        const response = await fetch(process.env.REACT_APP_BACKEND_LINK + '/employees', {
+          credentials: 'include'
+        });
         const data = await response.json();
         setEmployees(data);
       } catch (error) {
@@ -52,10 +54,11 @@ export default function EmployeeList() {
 
       const employeeToAdd = { ...newEmployee, manager: managerID };
 
-      const response = await fetch('https://climbr.onrender.com/employees', {
+      const response = await fetch(process.env.REACT_APP_BACKEND_LINK + '/employees', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(employeeToAdd),
+        credentials: 'include' 
       });
 
       console.log('Response status:', response.status);
@@ -99,13 +102,6 @@ export default function EmployeeList() {
             >
               Add an employee
             </button>
-            <Link to="/leaderboard">
-              <button
-                className="bg-blue-500 text-white font-medium text-xl px-3 py-2 rounded-lg shadow-lg hover:bg-blue-600 transition duration-300 ease-in-out transform hover:scale-105"
-              >
-                View Leaderboard
-              </button>
-            </Link>
           </div>
         </div>
 

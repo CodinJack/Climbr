@@ -1,54 +1,37 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useCookies } from 'react-cookie';
 
-export default function Navbar() {
+function NavBar() {
+  const [cookies, setCookie, removeCookie] = useCookies(['token']);
   const navigate = useNavigate();
-  const handleLogout = async () => {
-    try {
-      const response = await fetch('https://climbr.onrender.com/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
 
-      if (response.ok) {
-        navigate('/login');
-        window.location.reload();
-      } else {
-        console.error('Failed to log out');
-      }
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
+  const handleLogout = () => {
+    removeCookie('token');
+    navigate('/login');
   };
 
   return (
-    <nav className="bg-gray-800 fixed-top shadow w-full z-10">
-      <div className="container mx-auto px-4 py-4 grid grid-cols-3 items-center">
-        <div>
-          <Link className="text-3xl ml-8 font-bold text-purple-400" to="/tasks">Climbr.</Link>
+    <nav className="bg-gray-800 p-4">
+      <div className="container mx-auto flex justify-between items-center">
+        <div className="text-white font-bold text-xl">
+          <Link to="/">Climbr</Link>
         </div>
-        <div className="hidden md:block text-center">
-          <h1 className='text-xl font-semibold text-gray-300'>Task Manager</h1>
-        </div>
-        <div className="col-span-2 md:col-span-1 flex justify-end">
-          <ul className="flex space-x-12">
-            <li>
-              <Link className="text-lg font-semibold text-gray-300 hover:text-purple-200 transition-colors" to="/">Tasks</Link>
-            </li>
-            <li>
-              <Link className="text-lg font-semibold text-gray-300 hover:text-purple-200 transition-colors" to="/employees">Employees</Link>
-            </li>
-            <li>
-              <button
-                onClick={handleLogout}
-                className="text-lg font-semibold text-gray-300 hover:text-red-200 transition-colors"
-              >
-                Logout
-              </button>
-            </li>
-          </ul>
+        <div className="space-x-4">
+          <Link to="/tasks" className="text-white hover:text-gray-400">Tasks</Link>
+          <Link to="/employees" className="text-white hover:text-gray-400">Employees</Link>
+          <Link to="/leaderboard" className="text-white hover:text-gray-400">Leaderboard</Link>
+          <Link to="/profile" className="text-white hover:text-gray-400">Profile</Link>
+          <button 
+            onClick={handleLogout} 
+            className="text-white hover:text-gray-400"
+          >
+            Logout
+          </button>
         </div>
       </div>
     </nav>
   );
 }
+
+export default NavBar;

@@ -15,7 +15,9 @@ export default function EmployeeDetail() {
   useEffect(() => {
     const fetchEmployee = async () => {
       try {
-        const response = await fetch(`https://climbr.onrender.com/employees/${id}`);
+        const response = await fetch(process.env.REACT_APP_BACKEND_LINK + `/employees/${id}`, {
+          credentials: 'include'
+        });
         const data = await response.json();
         setEmployee(data);
         if (data.tasks) {
@@ -35,7 +37,9 @@ export default function EmployeeDetail() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await fetch(`https://climbr.onrender.com/tasks`);
+        const response = await fetch(process.env.REACT_APP_BACKEND_LINK + '/tasks', {
+          credentials: 'include'
+        });
         const data = await response.json();
         const assignedTasks = data.filter(task => taskIDs.includes(task._id));
         
@@ -58,8 +62,9 @@ export default function EmployeeDetail() {
 
   const handleRemoveEmployee = async () => {
     try {
-      const response = await fetch(`https://climbr.onrender.com/employees/${id}`, {
+      const response = await fetch(process.env.REACT_APP_BACKEND_LINK + `/employees/${id}`, {
         method: 'DELETE',
+        credentials: 'include'
       });
       if (response.ok) {
         console.log('Employee removed successfully');

@@ -58,3 +58,17 @@ exports.deleteEmployee = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+exports.getUserRole = async (req, res) => {
+    try {
+      if (req.user) {
+        return res.json({ role: req.user.role });
+      } else {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+    } catch (error) {
+      console.error('Server error:', error);
+      return res.status(500).json({ message: 'Server error' });
+    }
+  };
+  

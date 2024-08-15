@@ -23,7 +23,7 @@ export default function TaskDetail({ tasks, employees }) {
     try {
       if (!task.completed) {
         task.completed = true;
-        const response = await fetch(`https://climbr.onrender.com/tasks/${id}`, {
+        const response = await fetch(process.env.REACT_APP_BACKEND_LINK + `/tasks/${id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ completed: true }),
@@ -43,8 +43,9 @@ export default function TaskDetail({ tasks, employees }) {
 
   const handleDeleteTask = async () => {
     try {
-      const response = await fetch(`https://climbr.onrender.com/tasks/${id}`, {
+      const response = await fetch(process.env.REACT_APP_BACKEND_LINK + `/tasks/${id}`, {
         method: 'DELETE',
+        credentials: 'include'  
       });
       if (!response.ok) {
         throw new Error('Failed to delete task');

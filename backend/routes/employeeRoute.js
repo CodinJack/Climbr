@@ -6,6 +6,7 @@ const employeeController  = require('../controllers/employeeController');
 router.get('/', employeeController.getEmployees)
       .get('/:id', employeeController.getEmployeeById)
       .post('/', employeeController.createEmployee)
-      .delete('/:id', employeeController.deleteEmployee);
+      .delete('/:id', employeeController.deleteEmployee)
+      .get('/user-role', employeeController.getUserRole);
 
 module.exports = router;
