@@ -1,22 +1,18 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Nav';
 import Task from '../components/Task';
 import Modal from '../components/TaskModal';
 import Search from '../components/Search';
 import AOS from 'aos';
-import { useNavigate } from 'react-router-dom';
-import { useCookies } from 'react-cookie';
-import {jwtDecode} from 'jwt-decode'; // Import jwt-decode
+import { jwtDecode } from 'jwt-decode';
 import 'aos/dist/aos.css';
 
-export default function TasksList({ tasks: initialTasks, employees: initialEmployees }) {
-  const [tasks, setTasks] = useState(initialTasks);
-  const [employees, setEmployees] = useState(initialEmployees);
-  const [empID, setEmpID] = useState('');
+export default function TasksList() {
+  const [tasks, setTasks] = useState([]);
+  const [employees, setEmployees] = useState([]);
   const [isModalOpen, setModalOpen] = useState(false);
   const [isManager, setIsManager] = useState(false);
-  const [cookies] = useCookies(['token']);
-  const navigate = useNavigate();
+  const [currentUserID, setCurrentUserID] = useState('');
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
@@ -24,8 +20,8 @@ export default function TasksList({ tasks: initialTasks, employees: initialEmplo
     points: '',
     assignedTo: '',
   });
-  const [assignToOption, setAssignToOption] = useState('single');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
 
   const getEmployeeID = (taskId) => {
     const employee = employees.find((emp) => emp._id === taskId);
@@ -40,88 +36,132 @@ export default function TasksList({ tasks: initialTasks, employees: initialEmplo
   useEffect(() => {
     AOS.init({
       duration: 1000,
-      once: true
+      once: true,
     });
 
-    console.log('Cookies:', cookies); // Log all cookies
-    console.log('Token:', cookies.token); // Log specific token
-
     const decodeToken = () => {
-      if (cookies.token) {
-        try {
-          const decodedToken = jwtDecode(cookies.token);
-          const userId = decodedToken.id;
+      try {
+        const token = localStorage.getItem('token');
 
-          console.log('Decoded Token:', decodedToken);
-          console.log('User ID:', userId);
-
-          const user = employees.find(emp => emp._id === userId);
-          if (user) {
-            const isManagerRole = user.role === 'manager';
-            setIsManager(isManagerRole);
-            console.log('Is user a manager?', isManagerRole);
-          } else {
-            console.error('User not found');
-          }
-        } catch (error) {
-          console.error('Error decoding token:', error);
+        if (token) {
+          const decodedToken = jwtDecode(token);
+          const isManagerRole = decodedToken.role === 'manager';
+          setIsManager(isManagerRole);
+          setCurrentUserID(decodedToken.id);
+        } else {
+          console.log('No token found');
         }
-      } else {
-        console.log("No token found in cookies");
+      } catch (error) {
+        console.error('Error fetching or decoding token:', error);
       }
     };
 
     decodeToken();
-  }, [employees, cookies.token]);
 
+    const fetchInitialData = async () => {
+      try {
+        const [tasksResponse, employeesResponse] = await Promise.all([
+          fetch(`${process.env.REACT_APP_BACKEND_LINK}/tasks`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          }),
+          fetch(`${process.env.REACT_APP_BACKEND_LINK}/employees`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          }),
+        ]);
 
-  // Use useMemo to sort tasks only when tasks change
-  const sortedTasks = useMemo(() => {
-    const completedTasks = tasks.filter(task => task.completed);
-    const nonCompletedTasks = tasks.filter(task => !task.completed);
-    nonCompletedTasks.sort((a, b) => b.points - a.points);
-    return [...nonCompletedTasks, ...completedTasks];
-  }, [tasks]);
+        const tasksData = await tasksResponse.json();
+        const employeesData = await employeesResponse.json();
+
+        // Ensure tasksData is an array before setting it
+        if (Array.isArray(tasksData)) {
+          setTasks(tasksData);
+        } else {
+          console.error('Tasks data is not an array:', tasksData);
+          setTasks([]); // Default to an empty array if the data is not valid
+        }
+
+        setEmployees(employeesData);
+      } catch (error) {
+        console.error('Error fetching initial data:', error);
+        setTasks([]); // Default to an empty array on error
+      }
+    };
+
+    fetchInitialData();
+  }, []);
+
+  const insertTaskInOrder = (newTask, taskList) => {
+    const newTaskPoints = newTask.points;
+    const index = taskList.findIndex(
+      (task) => task.points < newTaskPoints && !task.completed
+    );
+
+    if (index === -1) {
+      return [...taskList, newTask];
+    }
+
+    return [
+      ...taskList.slice(0, index),
+      newTask,
+      ...taskList.slice(index),
+    ];
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'assignedTo') {
-      setEmpID(value);
-    } else {
-      setNewTask({ ...newTask, [name]: value });
-    }
+    setNewTask({ ...newTask, [name]: value });
   };
 
+  const handleCheckboxChange = (e) => {
+    const { value, checked } = e.target;
+    setSelectedEmployees((prevSelected) =>
+      checked
+        ? [...prevSelected, value]
+        : prevSelected.filter((id) => id !== value)
+    );
+  };
   const handleCreateTask = async () => {
     try {
-      let assignedToList = [];
-      if (assignToOption === 'all') {
-        assignedToList = employees.map(emp => emp._id);
-      } else {
-        const employee = employees.find(emp => emp.employeeID === empID);
-        assignedToList = employee ? [employee._id] : [];
-      }
+      const employeesToAssign = selectedEmployees.length > 0 ? selectedEmployees : [newTask.assignedTo];
 
-      const tasksToCreate = assignedToList.map(empID => ({
-        ...newTask,
-        assignedTo: empID,
-      }));
+      const createdTasks = await Promise.all(
+        employeesToAssign.map(async (empID) => {
+          const taskData = { ...newTask, assignedTo: empID };
+          const response = await fetch(
+            `${process.env.REACT_APP_BACKEND_LINK}/tasks`,
+            {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(taskData),
+            }
+          );
+          return response.json();
+        })
+      );
 
-      const createdTasks = await Promise.all(tasksToCreate.map(async task => {
-        const response = await fetch(process.env.REACT_APP_BACKEND_LINK + '/tasks', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(task),
-          credentials: 'include'
+      setTasks((prevTasks) => {
+        let updatedTasks = prevTasks;
+        createdTasks.forEach((newTask) => {
+          updatedTasks = insertTaskInOrder(newTask, updatedTasks);
         });
-        if (!response.ok) {
-          throw new Error('Error creating task');
-        }
-        return response.json();
-      }));
+        return updatedTasks;
+      });
 
-      setTasks(prevTasks => [...prevTasks, ...createdTasks]);
-      setNewTask({ title: '', description: '', dueDate: '', points: '', assignedTo: '' });
+      setNewTask({
+        title: '',
+        description: '',
+        dueDate: '',
+        points: '',
+        assignedTo: '',
+      });
+      setSelectedEmployees([]);
     } catch (error) {
       console.error('Error creating task:', error);
     } finally {
@@ -129,17 +169,38 @@ export default function TasksList({ tasks: initialTasks, employees: initialEmplo
     }
   };
 
-  const filteredTasks = sortedTasks.filter(task =>
-    task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    task.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredEmployees = employees.filter(
+    (employee) => employee.manager === currentUserID
   );
+
+  const filteredTasks = tasks.filter((task) => {
+    const matchesSearch =
+      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      task.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+    if (isManager) {
+      const assignedEmployee = employees.find(
+        (emp) => emp._id === task.assignedTo
+      );
+      return (
+        matchesSearch &&
+        assignedEmployee &&
+        assignedEmployee.role === 'employee' &&
+        assignedEmployee.manager === currentUserID
+      );
+    } else {
+      return matchesSearch && task.assignedTo === currentUserID;
+    }
+  });
 
   return (
     <div className="container mx-auto py-12 px-6 min-h-screen text-white bg-gray-900">
       <Navbar />
       <div className="container-fluid mx-auto py-12 px-6">
         <div className="grid grid-cols-3 gap-4 top-16 py-6 z-0">
-          <h1 className="col-span-1 text-white text-3xl font-bold">Tasks</h1>
+          <h1 className="col-span-1 text-white text-3xl font-bold">
+            Tasks
+          </h1>
           <div className="col-span-1">
             <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
           </div>
@@ -147,98 +208,136 @@ export default function TasksList({ tasks: initialTasks, employees: initialEmplo
             <div className="col-span-1 flex justify-end">
               <button
                 onClick={() => setModalOpen(true)}
-                className='bg-purple-500 text-white font-medium text-xl px-3 py-2 rounded-lg shadow-lg hover:bg-purple-600 transition duration-300 ease-in-out transform hover:scale-105'
+                className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-medium text-xl px-6 py-1 rounded-lg shadow-lg hover:bg-gradient-to-r hover:from-purple-600 hover:to-indigo-700 transition duration-300 ease-in-out transform hover:scale-105"
               >
-                Create a task
+                Create a Task
               </button>
             </div>
           )}
         </div>
-        <div className="space-y-4 pt-2">
-          {filteredTasks.map((task) => (
-            <Task
+        <div className="space-y-6 pt-4">
+          {filteredTasks.length > 0 ? (
+            filteredTasks.map((task) => (
+              <Task
+                data-aos="fade-up"
+                key={task._id}
+                name={getEmployeeName(task.assignedTo)}
+                assignedTo={getEmployeeID(task.assignedTo)}
+                task={task}
+              />
+            ))
+          ) : (
+            <div
               data-aos="fade-up"
-              key={task._id}
-              name={getEmployeeName(task.assignedTo)}
-              assignedTo={getEmployeeID(task.assignedTo)}
-              task={task}
-            />
-          ))}
+              className="text-center py-8 "
+            >
+              <h2 className="text-3xl font-semibold text-purple-500">
+                No tasks found
+              </h2>
+              <p className="text-gray-400">
+                It seems like there are no tasks assigned at the moment.
+              </p>
+            </div>
+          )}
         </div>
       </div>
-      {/*"add a task" modal*/}
       <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
-        <form>
-          <div className="mb-2">
-            <label className="block text-gray-700 text-sm font-bold mb-2">Title</label>
+        <form className="bg-white rounded-lg p-6">
+          <div className="mb-1">
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Title
+            </label>
             <input
               type="text"
               name="title"
               value={newTask.title}
               onChange={handleInputChange}
-              className="text-black w-full px-3 py-2 border rounded-lg"
+              className="text-black w-full px-4 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
-          <div className="mb-2">
-            <label className="block text-gray-700 text-sm font-bold mb-2">Description</label>
+          <div className="mb-1">
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Description
+            </label>
             <textarea
               name="description"
               value={newTask.description}
               onChange={handleInputChange}
-              className="w-full text-black px-3 py-2 border rounded-lg"
+              className="w-full text-black px-4 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             ></textarea>
           </div>
-          <div className="mb-2">
-            <label className="block text-gray-700 text-sm font-bold mb-2">Due Date</label>
+          <div className="mb-1">
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Due Date
+            </label>
             <input
               type="date"
               name="dueDate"
               value={newTask.dueDate}
               onChange={handleInputChange}
-              className="w-full text-black px-3 py-2 border rounded-lg"
+              className="text-black w-full px-4 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
-          <div className="mb-2">
-            <label className="block text-gray-700 text-sm font-bold mb-2">Points</label>
+          <div className="mb-1">
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Points
+            </label>
             <input
               type="number"
               name="points"
               value={newTask.points}
               onChange={handleInputChange}
-              className="w-full text-black px-3 py-2 border rounded-lg"
+              className="text-black w-full px-4 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
-          <div className="mb-2">
-            <label className="block text-gray-700 text-sm font-bold mb-2">Assign To</label>
-            <select
-              name="assignToOption"
-              value={assignToOption}
-              onChange={(e) => setAssignToOption(e.target.value)}
-              className="w-full text-black px-3 py-2 border rounded-lg"
-            >
-              <option value="single">Assign to one</option>
-              <option value="all">Assign to all</option>
-            </select>
-          </div>
-          {assignToOption === 'single' && (
-            <div className="mb-2">
-              <label className="block text-gray-700 text-sm font-bold mb-2">Employee ID</label>
-              <input
-                type="text"
-                name="assignedTo"
-                value={empID}
-                onChange={handleInputChange}
-                className="w-full text-black px-3 py-2 border rounded-lg"
-              />
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Assign To
+            </label>
+            <div className="grid grid-cols-2 gap-4">
+              {filteredEmployees.map((employee) => (
+                <label
+                  key={employee._id}
+                  className="flex items-center p-2 border rounded-lg cursor-pointer transition-colors duration-200 ease-in-out
+                      hover:bg-gray-100 focus-within:ring-2 focus-within:ring-blue-500"
+                >
+                  <input
+                    type="checkbox"
+                    name="assignTo"
+                    value={employee._id}
+                    checked={selectedEmployees.includes(employee._id)}
+                    onChange={handleCheckboxChange}
+                    className="form-checkbox h-5 w-5 text-blue-600"
+                  />
+                  <span className="ml-2 text-gray-700">
+                    {employee.employeeID} - {employee.name}
+                  </span>
+                </label>
+              ))}
             </div>
-          )}
-          <div className="flex justify-center">
+            <div className="mt-4 text-black">
+              <h1 className="text-lg font-semibold">Selected Employees:</h1>
+              <ul className="mt-2 list-disc pl-5">
+                {selectedEmployees.length === 0 ? (
+                  <li>None</li>
+                ) : (
+                  selectedEmployees.map((id) => (
+                    <li key={id}>
+                      {employees.find((emp) => emp._id === id)?.name || 'Unknown'}
+                    </li>
+                  ))
+                )}
+              </ul>
+            </div>
+          </div>
+
+          <div className="flex justify-end">
             <button
               type="button"
               onClick={handleCreateTask}
-              className="bg-purple-500 text-white font-medium text-xl px-6 py-2 rounded-lg shadow-lg hover:bg-purple-600 transition duration-300 ease-in-out transform hover:scale-105"
+              className="bg-purple-600 text-white font-medium text-lg px-6 py-1 rounded-lg shadow-md hover:bg-purple-700 transition duration-300 ease-in-out"
             >
-              Create
+              Create Task
             </button>
           </div>
         </form>

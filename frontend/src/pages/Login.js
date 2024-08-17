@@ -1,65 +1,42 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
-import Loading from '../components/Loading';
 
-export default function Login({setToken }) {
+export default function Login() {
     const [employeeID, setEmployeeID] = useState('');
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('employee');
     const [error, setError] = useState('');
     const [newManager, setNewManager] = useState(false);
-    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         setError('');
 
-        const timeoutId = setTimeout(() => {
-            setLoading(false);
-            setError('The request took too long. Please try again.');
-            navigate('/login');
-        }, 10000); // 10 seconds
-
         const endpoint = newManager ? 'signup-manager' : 'login';
-        const body = newManager ? { employeeID, name, password } : { employeeID, password, role };
+        const body = { employeeID, password, role };
 
         try {
             const response = await fetch(`${process.env.REACT_APP_BACKEND_LINK}/auth/${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify(body),
             });
 
             if (response.ok) {
-                setToken(true); // Update the token state in App.js
-                clearTimeout(timeoutId);
+                const data = await response.json();
+                localStorage.setItem('token', data.token); // Store the token in localStorage
                 navigate('/tasks');
             } else {
                 const errorData = await response.json();
                 setError(errorData.message || 'An error occurred. Please try again.');
             }
         } catch (error) {
-            console.error('Error details:', {
-                message: error.message,
-                name: error.name,
-                url: `${process.env.REACT_APP_BACKEND_LINK}/auth/${endpoint}`,
-            });
-                    setError('Server error. Please try again later.');
-        } finally {
-            clearTimeout(timeoutId);
-            setLoading(false);
+            setError('Server error. Please try again later.');
         }
     };
-
-
-    if (loading) {
-        return <Loading />;
-    }
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-900">

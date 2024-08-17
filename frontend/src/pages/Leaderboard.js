@@ -15,11 +15,19 @@ export default function Leaderboard() {
     const fetchEmployees = async () => {
       try {
         const response = await fetch(process.env.REACT_APP_BACKEND_LINK + '/employees', {
-          credentials: 'include'
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
         });
         const data = await response.json();
         const sortedEmployees = data.sort((a, b) => b.totalPoints - a.totalPoints);
-        setEmployees(sortedEmployees);
+        const filteredEmployees = sortedEmployees.filter(
+          (employee) => employee.role === 'employee'
+        );
+  
+        setEmployees(filteredEmployees);
       } catch (error) {
         console.error('Error fetching employees:', error);
       }

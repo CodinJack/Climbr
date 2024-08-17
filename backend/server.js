@@ -18,8 +18,10 @@ mongoose.connect(uri)
 
 //middleware
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: process.env.FRONTEND_LINK,
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(bodyParser.json());
 app.use(cookieParser());

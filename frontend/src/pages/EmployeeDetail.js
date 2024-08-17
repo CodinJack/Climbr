@@ -69,6 +69,7 @@ export default function EmployeeDetail() {
       if (response.ok) {
         console.log('Employee removed successfully');
         navigate('/employees'); 
+        window.location.reload();
       } else {
         throw new Error('Failed to remove employee');
       }
@@ -117,11 +118,12 @@ export default function EmployeeDetail() {
         
         <p className="text-gray-300 mb-6">Employee ID: {employee.employeeID}</p>
         <p>Task Completion Rate: {calculateTaskCompletionRate()}%</p>
-        <div className="text-2xl font-semibold text-purple-400 mb-4">TaskIDs Assigned:</div>
-        <div className="space-y-4">
+        <br/>
+        <div className="text-2xl font-semibold text-purple-400 mb-4">Tasks Assigned:</div>
+        <div className="space-y-2">
           {tasks.length === 0 && <p className="text-white">No taskIDs assigned to this employee.</p>}
           {tasks.map(task => (
-            <Task key={task._id} assignedTo={employee._id} name={employee.name} task={task} />
+            <Task key={task._id} assignedTo={employee.employeeID} name={employee.name} task={task} />
           ))}
         </div>
       </div>

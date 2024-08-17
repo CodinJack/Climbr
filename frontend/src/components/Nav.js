@@ -1,30 +1,52 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useCookies } from 'react-cookie';
-
+import Logo from './Logo'
 function NavBar() {
-  const [cookies, setCookie, removeCookie] = useCookies(['token']);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    removeCookie('token');
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      localStorage.removeItem('token');
+      navigate('/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
   };
 
   return (
-    <nav className="bg-gray-800 p-4">
+    <nav className="bg-gray-900 p-0 shadow-md">
       <div className="container mx-auto flex justify-between items-center">
-        <div className="text-white font-bold text-xl">
-          <Link to="/">Climbr</Link>
+        <div className="text-white font-extrabold text-2xl">
+          <Logo/>
         </div>
-        <div className="space-x-4">
-          <Link to="/tasks" className="text-white hover:text-gray-400">Tasks</Link>
-          <Link to="/employees" className="text-white hover:text-gray-400">Employees</Link>
-          <Link to="/leaderboard" className="text-white hover:text-gray-400">Leaderboard</Link>
-          <Link to="/profile" className="text-white hover:text-gray-400">Profile</Link>
-          <button 
-            onClick={handleLogout} 
-            className="text-white hover:text-gray-400"
+        <div className="space-x-6 flex items-center">
+          <Link
+            to="/tasks"
+            className="text-white font-medium text-lg hover:text-purple-500 transition duration-300 ease-in-out transform hover:scale-110"
+          >
+            Tasks
+          </Link>
+          <Link
+            to="/employees"
+            className="text-white font-medium text-lg hover:text-purple-500 transition duration-300 ease-in-out transform hover:scale-110"
+          >
+            Employees
+          </Link>
+          <Link
+            to="/leaderboard"
+            className="text-white font-medium text-lg hover:text-purple-500 transition duration-300 ease-in-out transform hover:scale-110"
+          >
+            Leaderboard
+          </Link>
+          <Link
+            to="/profile"
+            className="text-white font-medium text-lg hover:text-purple-500 transition duration-300 ease-in-out transform hover:scale-110"
+          >
+            Profile
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="text-white font-medium text-lg hover:text-purple-500 transition duration-300 ease-in-out transform hover:scale-110"
           >
             Logout
           </button>

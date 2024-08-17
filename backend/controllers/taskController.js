@@ -1,6 +1,7 @@
 const Task = require('../models/taskModel');
 const Employee = require('../models/employeeModel');
-//get all tasks
+
+// Get all tasks
 exports.getTasks = async (req, res) => {
     try {
         const tasks = await Task.find();
@@ -10,7 +11,7 @@ exports.getTasks = async (req, res) => {
     }
 };
 
-//get a single task by ID
+// Get a single task by ID
 exports.getTaskById = async (req, res) => {
     const { id } = req.params;
     try {
@@ -24,19 +25,21 @@ exports.getTaskById = async (req, res) => {
     }
 };
 
-//create a new task
+// Create a new task
 exports.createTask = async (req, res) => {
     const task = new Task(req.body);
 
     try {
         const newTask = await task.save();
-        const employee = await Employee.findByIdAndUpdate(
-            req.body.assignedTo,
-            { $push: { tasks: newTask._id } },
-            { new: true }
-        ).populate('tasks');
-        if (!employee) {
-            return res.status(404).json({ message: "Employee not found" });
+        if (req.body.assignedTo) {
+            const employee = await Employee.findByIdAndUpdate(
+                req.body.assignedTo,
+                { $push: { tasks: newTask._id } },
+                { new: true }
+            ).populate('tasks');
+            if (!employee) {
+                return res.status(404).json({ message: "Employee not found" });
+            }
         }
         res.status(201).json(newTask);
     } catch (err) {
@@ -44,19 +47,16 @@ exports.createTask = async (req, res) => {
     }
 };
 
-//delete a task by ID
+// Delete a task by ID
 exports.deleteTask = async (req, res) => {
     const { id } = req.params;
-
     try {
         const deletedTask = await Task.findByIdAndDelete(id);
         if (!deletedTask) {
             return res.status(404).json({ message: 'Task not found' });
         }
-
         if (deletedTask.assignedTo) {
             const assignedEmployee = await Employee.findById(deletedTask.assignedTo);
-
             if (assignedEmployee) {
                 assignedEmployee.tasks.pull(deletedTask._id);
                 await assignedEmployee.save();
@@ -67,6 +67,8 @@ exports.deleteTask = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+// Patch (update) a task
 exports.patchTask = async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
@@ -78,11 +80,10 @@ exports.patchTask = async (req, res) => {
         }
         if (updates.completed) {
             const assignedEmployee = await Employee.findById(updatedTask.assignedTo);
-            if (!assignedEmployee) {
-                throw new Error('Assigned employee not found');
+            if (assignedEmployee) {
+                assignedEmployee.totalPoints += updatedTask.points;
+                await assignedEmployee.save();
             }
-            assignedEmployee.totalPoints += updatedTask.points;
-            await assignedEmployee.save();
         }
         res.status(200).json(updatedTask);
     } catch (err) {
@@ -91,8 +92,7 @@ exports.patchTask = async (req, res) => {
     }
 };
 
-
-//verify task
+// Verify task (mark as completed and update employee points)
 exports.verifyTask = async (req, res) => {
     try {
         const task = await Task.findById(req.params.id);
@@ -101,12 +101,20 @@ exports.verifyTask = async (req, res) => {
         task.completed = true;
         await task.save();
 
-        const employee = await Employee.findById(task.assignedTo);
-        employee.totalPoints += task.points;
-        await employee.save();
+        if (task.assignedTo) {
+            const employee = await Employee.findById(task.assignedTo);
+            if (employee) {
+                employee.totalPoints += task.points;
+                await employee.save();
+            } else {
+                // Handle case where the assigned employee is not found
+                console.warn(`Employee with ID ${task.assignedTo} not found.`);
+            }
+        }
 
         res.json({ message: 'Task verified and employee points updated' });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: 'Server error' });
     }
 }
