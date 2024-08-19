@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const Employee = require('../models/employeeModel');
 
 exports.login = async (req, res) => {
-  const { employeeID, password } = req.body;
+  const { employeeID, password, role } = req.body;
 
   try {
     const employee = await Employee.findOne({ employeeID });
@@ -12,7 +12,7 @@ exports.login = async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(password, employee.password);
-    if (!isMatch) {
+    if (!isMatch || employee.role !== role) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
