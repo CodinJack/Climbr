@@ -1,8 +1,11 @@
 import React from 'react';
-export default function Loading() {
-    return (
-        <div className="flex items-center justify-center min-h-screen">
-            <div className="w-16 h-16 border-4 border-purple-500 border-dashed rounded-full animate-spin"></div>
-        </div>
-    );
-}
+
+const Loading = () => {
+  return (
+    <div className="flex justify-center items-center h-screen bg-gray-900">
+      <div className="animate-spin rounded-full h-32 w-32 border-t-4 border-purple-400 border-opacity-75"></div>
+    </div>
+  );
+};
+
+export default Loading;

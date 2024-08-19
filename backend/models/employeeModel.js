@@ -32,6 +32,10 @@ const EmployeeSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Employee' 
   },
+  joinedDate: {
+    type: Date,
+    default: Date.now,
+  }
 });
 
 module.exports = mongoose.model('Employee', EmployeeSchema);

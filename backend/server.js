@@ -28,10 +28,10 @@ app.use(cookieParser());
 
 //routes
 const employeeRoutes = require('./routes/employeeRoute');
-app.use('/employees', auth, employeeRoutes);
+app.use('/employees', employeeRoutes);
 
 const taskRoutes = require('./routes/taskRoute');
-app.use('/tasks', auth, taskRoutes);
+app.use('/tasks', taskRoutes);
 
 const authRoutes = require('./routes/authRoute');
 app.use('/auth', authRoutes);

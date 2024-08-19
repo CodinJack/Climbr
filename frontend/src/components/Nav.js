@@ -1,8 +1,23 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Logo from './Logo'
+import {jwtDecode} from 'jwt-decode';
+import Logo from './Logo';
+
 function NavBar() {
+  const [role, setRole] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        setRole(decodedToken.role); // Assuming the role is stored in the token
+      } catch (error) {
+        console.error('Error decoding token:', error);
+      }
+    }
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -17,7 +32,7 @@ function NavBar() {
     <nav className="bg-gray-900 p-0 shadow-md">
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-white font-extrabold text-2xl">
-          <Logo/>
+          <Logo />
         </div>
         <div className="space-x-6 flex items-center">
           <Link
@@ -26,12 +41,14 @@ function NavBar() {
           >
             Tasks
           </Link>
-          <Link
-            to="/employees"
-            className="text-white font-medium text-lg hover:text-purple-500 transition duration-300 ease-in-out transform hover:scale-110"
-          >
-            Employees
-          </Link>
+          {role === 'manager' && (
+            <Link
+              to="/employees"
+              className="text-white font-medium text-lg hover:text-purple-500 transition duration-300 ease-in-out transform hover:scale-110"
+            >
+              Employees
+            </Link>
+          )}
           <Link
             to="/leaderboard"
             className="text-white font-medium text-lg hover:text-purple-500 transition duration-300 ease-in-out transform hover:scale-110"

@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Nav';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import Loading from '../components/Loading';
 
 export default function Leaderboard() {
   const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     AOS.init({
@@ -26,15 +28,20 @@ export default function Leaderboard() {
         const filteredEmployees = sortedEmployees.filter(
           (employee) => employee.role === 'employee'
         );
-  
+
         setEmployees(filteredEmployees);
       } catch (error) {
         console.error('Error fetching employees:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchEmployees();
   }, []);
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div className="container mx-auto py-12 px-6 min-h-screen text-white bg-gray-900">
@@ -53,7 +60,7 @@ export default function Leaderboard() {
               <div
                 key={employee._id}
                 className={`${bgColor} p-4 rounded-lg shadow-lg transform transition-transform hover:scale-105`}
-                data-aos="fade-up" 
+                data-aos="fade-up"
               >
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold">

@@ -37,6 +37,8 @@ exports.createEmployee = async (req, res) => {
         res.status(400).json({ message: err.message });
     }
 };
+
+//delete an employee
 exports.deleteEmployee = async (req, res) => {
     const { id } = req.params;
 
@@ -46,12 +48,10 @@ exports.deleteEmployee = async (req, res) => {
             return res.status(404).json({ message: 'Employee not found' });
         }
 
-        //find and delete all tasks assigned to this employee
         for (const taskId of employee.tasks) {
             await Task.findByIdAndDelete(taskId);
         }
 
-        //delete the employee
         await Employee.findByIdAndDelete(id);
 
         res.json({ message: 'Employee and their tasks deleted successfully' });
@@ -59,17 +59,4 @@ exports.deleteEmployee = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
-
-exports.getUserRole = async (req, res) => {
-    try {
-      if (req.user) {
-        return res.json({ role: req.user.role });
-      } else {
-        return res.status(401).json({ message: 'Unauthorized' });
-      }
-    } catch (error) {
-      console.error('Server error:', error);
-      return res.status(500).json({ message: 'Server error' });
-    }
-  };
   

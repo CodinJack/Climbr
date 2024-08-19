@@ -4,9 +4,10 @@ import Navbar from '../components/Nav';
 import Modal from '../components/EmployeeModal';
 import Search from '../components/Search';
 import AOS from 'aos';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import bcrypt from 'bcryptjs'; 
 import 'aos/dist/aos.css';
+import Loading from '../components/Loading';
 
 export default function EmployeeList() {
   const [employees, setEmployees] = useState([]);
@@ -22,6 +23,8 @@ export default function EmployeeList() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortCriteria, setSortCriteria] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
+  const [isLoading, setIsLoading] = useState(true); 
+  const [error, setError] = useState(null); 
 
   useEffect(() => {
     AOS.init({
@@ -33,6 +36,8 @@ export default function EmployeeList() {
   }, []);
 
   const fetchEmployees = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -51,7 +56,6 @@ export default function EmployeeList() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          // Handle unauthorized error, maybe redirect to login
           console.error('Unauthorized access - redirecting to login');
           // Add redirection or other handling here
           return;
@@ -72,6 +76,9 @@ export default function EmployeeList() {
       setEmployees(filteredEmployees);
     } catch (error) {
       console.error('Error fetching employees:', error.message);
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -90,7 +97,6 @@ export default function EmployeeList() {
       const decodedToken = jwtDecode(token);
       const managerID = decodedToken.id;
 
-      // Hash the password
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(newEmployee.password, salt);
 
@@ -175,24 +181,35 @@ export default function EmployeeList() {
           </button>
         </div>
 
-        <div className="flex flex-wrap justify-center">
-          {filteredEmployees.length ? (
-            filteredEmployees.map((employee) => (
-              <Link data-aos="fade-up" to={`/employees/${employee._id}`} key={employee._id}>
-                <div className="bg-gray-800 p-10 rounded-lg shadow-md mx-4 my-4 max-w-sm text-center">
-                  <h3 className="text-2xl font-semibold text-purple-400">{employee.name}</h3>
-                  <p className="text-gray-300">Username: {employee.employeeID}</p>
-                  <p className="text-gray-300">Total Points: {employee.totalPoints}</p>
-                </div>
-              </Link>
-            ))
-          ) : (
-            <div data-aos="fade-up" className="text-center py-10">
-              <h2 className="text-2xl font-semibold text-purple-500">No employees found</h2>
-              <p className="text-gray-400">It seems like there are no employees under you currently.</p>
-            </div>
-          )}
-        </div>
+        {isLoading ? (
+          <div className="text-center py-10">
+            <p className="text-2xl font-semibold text-purple-500"><Loading/></p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-10">
+            <h2 className="text-2xl font-semibold text-red-500">Error</h2>
+            <p className="text-gray-400">{error}</p>
+          </div>
+        ) : (
+          <div className="flex flex-wrap justify-center">
+            {filteredEmployees.length ? (
+              filteredEmployees.map((employee) => (
+                <Link data-aos="fade-up" to={`/employees/${employee._id}`} key={employee._id}>
+                  <div className="bg-gray-800 p-10 rounded-lg shadow-md mx-4 my-4 max-w-sm text-center">
+                    <h3 className="text-2xl font-semibold text-purple-400">{employee.name}</h3>
+                    <p className="text-gray-300">Username: {employee.employeeID}</p>
+                    <p className="text-gray-300">Total Points: {employee.totalPoints}</p>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div data-aos="fade-up" className="text-center py-10">
+                <h2 className="text-2xl font-semibold text-purple-500">No employees found</h2>
+                <p className="text-gray-400">It seems like there are no employees under you currently.</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
         <form>

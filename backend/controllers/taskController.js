@@ -1,7 +1,7 @@
 const Task = require('../models/taskModel');
 const Employee = require('../models/employeeModel');
 
-// Get all tasks
+//get all tasks
 exports.getTasks = async (req, res) => {
     try {
         const tasks = await Task.find();
@@ -11,7 +11,7 @@ exports.getTasks = async (req, res) => {
     }
 };
 
-// Get a single task by ID
+//get a single task by ID
 exports.getTaskById = async (req, res) => {
     const { id } = req.params;
     try {
@@ -25,7 +25,7 @@ exports.getTaskById = async (req, res) => {
     }
 };
 
-// Create a new task
+//create a new task
 exports.createTask = async (req, res) => {
     const task = new Task(req.body);
 
@@ -47,7 +47,7 @@ exports.createTask = async (req, res) => {
     }
 };
 
-// Delete a task by ID
+//delete a task by ID
 exports.deleteTask = async (req, res) => {
     const { id } = req.params;
     try {
@@ -68,8 +68,8 @@ exports.deleteTask = async (req, res) => {
     }
 };
 
-// Patch (update) a task
-exports.patchTask = async (req, res) => {
+//put(update) a task
+exports.updateTask = async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
 
@@ -88,33 +88,6 @@ exports.patchTask = async (req, res) => {
         res.status(200).json(updatedTask);
     } catch (err) {
         console.error(err);
-        res.status(400).json({ message: err.message }); // Handle errors appropriately
+        res.status(400).json({ message: err.message });
     }
 };
-
-// Verify task (mark as completed and update employee points)
-exports.verifyTask = async (req, res) => {
-    try {
-        const task = await Task.findById(req.params.id);
-        if (!task) return res.status(404).json({ message: 'Task not found' });
-
-        task.completed = true;
-        await task.save();
-
-        if (task.assignedTo) {
-            const employee = await Employee.findById(task.assignedTo);
-            if (employee) {
-                employee.totalPoints += task.points;
-                await employee.save();
-            } else {
-                // Handle case where the assigned employee is not found
-                console.warn(`Employee with ID ${task.assignedTo} not found.`);
-            }
-        }
-
-        res.json({ message: 'Task verified and employee points updated' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
-    }
-}

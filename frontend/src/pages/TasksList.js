@@ -4,8 +4,9 @@ import Task from '../components/Task';
 import Modal from '../components/TaskModal';
 import Search from '../components/Search';
 import AOS from 'aos';
-import { jwtDecode } from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode'; // Make sure you import jwtDecode correctly
 import 'aos/dist/aos.css';
+import Loading from '../components/Loading';
 
 export default function TasksList() {
   const [tasks, setTasks] = useState([]);
@@ -22,6 +23,7 @@ export default function TasksList() {
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEmployees, setSelectedEmployees] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const getEmployeeID = (taskId) => {
     const employee = employees.find((emp) => emp._id === taskId);
@@ -73,21 +75,26 @@ export default function TasksList() {
           }),
         ]);
 
+        if (!tasksResponse.ok || !employeesResponse.ok) {
+          throw new Error('Failed to fetch data');
+        }
+
         const tasksData = await tasksResponse.json();
         const employeesData = await employeesResponse.json();
 
-        // Ensure tasksData is an array before setting it
         if (Array.isArray(tasksData)) {
           setTasks(tasksData);
         } else {
           console.error('Tasks data is not an array:', tasksData);
-          setTasks([]); // Default to an empty array if the data is not valid
+          setTasks([]);
         }
 
         setEmployees(employeesData);
+        setIsLoading(false);
       } catch (error) {
         console.error('Error fetching initial data:', error);
-        setTasks([]); // Default to an empty array on error
+        setTasks([]);
+        setIsLoading(false);
       }
     };
 
@@ -124,6 +131,7 @@ export default function TasksList() {
         : prevSelected.filter((id) => id !== value)
     );
   };
+
   const handleCreateTask = async () => {
     try {
       const employeesToAssign = selectedEmployees.length > 0 ? selectedEmployees : [newTask.assignedTo];
@@ -142,6 +150,9 @@ export default function TasksList() {
               body: JSON.stringify(taskData),
             }
           );
+          if (!response.ok) {
+            throw new Error('Failed to create task');
+          }
           return response.json();
         })
       );
@@ -166,6 +177,25 @@ export default function TasksList() {
       console.error('Error creating task:', error);
     } finally {
       setModalOpen(false);
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_LINK}/tasks/${taskId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete task');
+      }
+
+      setTasks((prevTasks) => prevTasks.filter((task) => task._id !== taskId));
+    } catch (error) {
+      console.error('Error deleting task:', error);
     }
   };
 
@@ -208,134 +238,117 @@ export default function TasksList() {
             <div className="col-span-1 flex justify-end">
               <button
                 onClick={() => setModalOpen(true)}
-                className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-medium text-xl px-6 py-1 rounded-lg shadow-lg hover:bg-gradient-to-r hover:from-purple-600 hover:to-indigo-700 transition duration-300 ease-in-out transform hover:scale-105"
+                className="bg-purple-500 text-white font-medium text-xl px-3 py-2 rounded-lg shadow-lg hover:bg-purple-600 transition duration-300 ease-in-out transform hover:scale-105"
               >
                 Create a Task
               </button>
             </div>
           )}
         </div>
-        <div className="space-y-6 pt-4">
-          {filteredTasks.length > 0 ? (
-            filteredTasks.map((task) => (
-              <Task
+        {isLoading ? (
+          <div className="text-center py-8">
+            <h2 className="text-2xl font-semibold text-purple-500 "><Loading/></h2>
+          </div>
+        ) : (
+          <div className="space-y-6 pt-4">
+            {filteredTasks.length > 0 ? (
+              filteredTasks.map((task) => (
+                <Task
+                  data-aos="fade-up"
+                  key={task._id}
+                  name={getEmployeeName(task.assignedTo)}
+                  assignedTo={getEmployeeID(task.assignedTo)}
+                  task={task}
+                />
+              ))
+            ) : (
+              <div
                 data-aos="fade-up"
-                key={task._id}
-                name={getEmployeeName(task.assignedTo)}
-                assignedTo={getEmployeeID(task.assignedTo)}
-                task={task}
-              />
-            ))
-          ) : (
-            <div
-              data-aos="fade-up"
-              className="text-center py-8 "
-            >
-              <h2 className="text-3xl font-semibold text-purple-500">
-                No tasks found
-              </h2>
-              <p className="text-gray-400">
-                It seems like there are no tasks assigned at the moment.
-              </p>
-            </div>
-          )}
-        </div>
+                className="text-center py-8 "
+              >
+                <h2 className="text-3xl font-semibold text-purple-500">
+                  No tasks found
+                </h2>
+                <p className="text-gray-400">
+                  It seems like there are no tasks assigned at the moment.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
-        <form className="bg-white rounded-lg p-6">
-          <div className="mb-1">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Title
-            </label>
+        <form className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-2xl font-bold mb-4">Create New Task</h2>
+          <div className="mb-4">
+            <label className="block text-gray-700 font-medium mb-2">Title</label>
             <input
               type="text"
               name="title"
               value={newTask.title}
               onChange={handleInputChange}
-              className="text-black w-full px-4 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 border rounded-md"
+              required
             />
           </div>
-          <div className="mb-1">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Description
-            </label>
+          <div className="mb-4">
+            <label className="block text-gray-700 font-medium mb-2">Description</label>
             <textarea
               name="description"
               value={newTask.description}
               onChange={handleInputChange}
-              className="w-full text-black px-4 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-            ></textarea>
+              className="w-full px-3 py-2 border rounded-md"
+              required
+            />
           </div>
-          <div className="mb-1">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Due Date
-            </label>
+          <div className="mb-4">
+            <label className="block text-gray-700 font-medium mb-2">Due Date</label>
             <input
               type="date"
               name="dueDate"
               value={newTask.dueDate}
               onChange={handleInputChange}
-              className="text-black w-full px-4 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 border rounded-md"
+              required
             />
           </div>
-          <div className="mb-1">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Points
-            </label>
+          <div className="mb-4">
+            <label className="block text-gray-700 font-medium mb-2">Points</label>
             <input
               type="number"
               name="points"
               value={newTask.points}
               onChange={handleInputChange}
-              className="text-black w-full px-4 py-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 border rounded-md"
+              required
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Assign To
-            </label>
-            <div className="grid grid-cols-2 gap-4">
-              {filteredEmployees.map((employee) => (
-                <label
-                  key={employee._id}
-                  className="flex items-center p-2 border rounded-lg cursor-pointer transition-colors duration-200 ease-in-out
-                      hover:bg-gray-100 focus-within:ring-2 focus-within:ring-blue-500"
-                >
-                  <input
-                    type="checkbox"
-                    name="assignTo"
-                    value={employee._id}
-                    checked={selectedEmployees.includes(employee._id)}
-                    onChange={handleCheckboxChange}
-                    className="form-checkbox h-5 w-5 text-blue-600"
-                  />
-                  <span className="ml-2 text-gray-700">
-                    {employee.employeeID} - {employee.name}
-                  </span>
-                </label>
-              ))}
-            </div>
-            <div className="mt-4 text-black">
-              <h1 className="text-lg font-semibold">Selected Employees:</h1>
-              <ul className="mt-2 list-disc pl-5">
-                {selectedEmployees.length === 0 ? (
-                  <li>None</li>
-                ) : (
-                  selectedEmployees.map((id) => (
-                    <li key={id}>
-                      {employees.find((emp) => emp._id === id)?.name || 'Unknown'}
-                    </li>
-                  ))
-                )}
-              </ul>
-            </div>
+            <label className="block text-gray-700 font-medium mb-2">Assign To</label>
+            {filteredEmployees.length > 0 ? (
+              <div>
+                {filteredEmployees.map((emp) => (
+                  <div key={emp._id} className="mb-2">
+                    <input
+                      type="checkbox"
+                      value={emp._id}
+                      checked={selectedEmployees.includes(emp._id)}
+                      onChange={handleCheckboxChange}
+                      className="mr-2"
+                    />
+                    <label className="text-gray-700">{emp.name} ({emp.employeeID})</label>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500">No employees available.</p>
+            )}
           </div>
-
-          <div className="flex justify-end">
+          <div className="flex justify-end mt-4">
             <button
               type="button"
               onClick={handleCreateTask}
-              className="bg-purple-600 text-white font-medium text-lg px-6 py-1 rounded-lg shadow-md hover:bg-purple-700 transition duration-300 ease-in-out"
+              className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow-md"
             >
               Create Task
             </button>
