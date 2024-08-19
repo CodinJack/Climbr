@@ -279,7 +279,7 @@ export default function TasksList() {
       </div>
       <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
         <form className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold mb-4">Create New Task</h2>
+          <h2 className="text-2xl font-bold text-black mb-4">Create New Task</h2>
           <div className="mb-4">
             <label className="block text-gray-700 font-medium mb-2">Title</label>
             <input
