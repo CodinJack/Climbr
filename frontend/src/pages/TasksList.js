@@ -279,7 +279,7 @@ export default function TasksList() {
       </div>
       <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
         <form className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold text-black mb-4">Create New Task</h2>
+          <h2 className="text-2xl font-bold text-gray-500 mb-4">Create New Task</h2>
           <div className="mb-4">
             <label className="block text-gray-700 font-medium mb-2">Title</label>
             <input
@@ -287,7 +287,7 @@ export default function TasksList() {
               name="title"
               value={newTask.title}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-3 py-2 text-gray-500 border rounded-md"
               required
             />
           </div>
@@ -297,7 +297,7 @@ export default function TasksList() {
               name="description"
               value={newTask.description}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-3 py-2 border text-gray-500 rounded-md"
               required
             />
           </div>
@@ -308,7 +308,7 @@ export default function TasksList() {
               name="dueDate"
               value={newTask.dueDate}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-3 py-2 border text-gray-500 rounded-md"
               required
             />
           </div>
@@ -319,7 +319,7 @@ export default function TasksList() {
               name="points"
               value={newTask.points}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full px-3 py-2 border text-gray-500 rounded-md"
               required
             />
           </div>
