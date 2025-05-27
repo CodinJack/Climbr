@@ -16,7 +16,11 @@ export default function Login() {
         setError('');
 
         const endpoint = newManager ? 'signup-manager' : 'login';
-        const body = { employeeID, password, role };
+
+        // ✅ Send correct fields based on operation
+        const body = newManager
+            ? { employeeID, name, password }
+            : { employeeID, password, role };
 
         try {
             const response = await fetch(`${process.env.REACT_APP_BACKEND_LINK}/auth/${endpoint}`, {
@@ -27,13 +31,14 @@ export default function Login() {
 
             if (response.ok) {
                 const data = await response.json();
-                localStorage.setItem('token', data.token); // Store the token in localStorage
+                localStorage.setItem('token', data.token); // Store token
                 navigate('/tasks');
             } else {
                 const errorData = await response.json();
                 setError(errorData.message || 'An error occurred. Please try again.');
             }
         } catch (error) {
+            console.error('Frontend Error:', error); // 🔍 Debug log
             setError('Server error. Please try again later.');
         }
     };
@@ -43,6 +48,7 @@ export default function Login() {
             <div className="w-full max-w-md p-8 space-y-8 bg-gray-800 rounded-lg shadow-lg">
                 <Logo />
                 <h2 className="text-2xl font-bold text-center text-white">Sign in to your account</h2>
+
                 <div className="flex space-x-4">
                     <button
                         onClick={() => {
@@ -67,6 +73,7 @@ export default function Login() {
                 </div>
 
                 {error && <p className="text-red-500 text-center">{error}</p>}
+
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {newManager && (
                         <div>
@@ -84,6 +91,7 @@ export default function Login() {
                             />
                         </div>
                     )}
+
                     <div>
                         <label htmlFor="employeeID" className="block text-sm font-medium text-gray-300">
                             Employee ID
@@ -98,6 +106,7 @@ export default function Login() {
                             className="w-full px-3 py-2 mt-1 text-black rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500"
                         />
                     </div>
+
                     <div>
                         <label htmlFor="password" className="block text-sm font-medium text-gray-300">
                             Password
@@ -112,16 +121,18 @@ export default function Login() {
                             className="w-full px-3 py-2 mt-1 text-black rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500"
                         />
                     </div>
+
                     <div>
                         <button
                             type="submit"
                             className="w-full px-4 py-2 font-bold text-white bg-purple-500 rounded-lg hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
                         >
-                            {newManager && role === "manager" ? 'Create Manager' : 'Sign In'}
+                            {newManager && role === 'manager' ? 'Create Manager' : 'Sign In'}
                         </button>
                     </div>
+
                     <div>
-                        {role === "manager" && (
+                        {role === 'manager' && (
                             <button
                                 type="button"
                                 onClick={() => setNewManager(true)}
